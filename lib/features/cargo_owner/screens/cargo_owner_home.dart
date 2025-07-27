@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
 import '../../../core/models/booking_model.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/enums/app_enums.dart';
 import '../../profile/providers/profile_provider.dart';
 import '../../booking/providers/booking_provider.dart';
+import '../../../providers/auth_provider.dart';
+import '../../../widgets/profile_header.dart';
+import '../../../mixins/image_picker_mixin.dart';
+import '../../../mixins/logout_mixin.dart';
 
 class CargoOwnerHome extends StatefulWidget {
   const CargoOwnerHome({super.key});
@@ -213,6 +218,7 @@ class _CargoOwnerHomeTab extends StatelessWidget {
       ),
       child: Container(
         padding: const EdgeInsets.all(20),
+        width: double.infinity,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -236,6 +242,7 @@ class _CargoOwnerHomeTab extends StatelessWidget {
                 );
               },
               style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 40),
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
@@ -720,9 +727,15 @@ class _CargoOwnerHistoryTab extends StatelessWidget {
   }
 }
 
-class _CargoOwnerProfileTab extends StatelessWidget {
+class _CargoOwnerProfileTab extends StatefulWidget {
   const _CargoOwnerProfileTab();
 
+  @override
+  State<_CargoOwnerProfileTab> createState() => _CargoOwnerProfileTabState();
+}
+
+class _CargoOwnerProfileTabState extends State<_CargoOwnerProfileTab>
+    with ImagePickerMixin, LogoutMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -738,7 +751,10 @@ class _CargoOwnerProfileTab extends StatelessWidget {
           return Column(
             children: [
               // Profile Header
-              _buildProfileHeader(user),
+              ProfileHeader(
+                user: user,
+                onImageTap: () => showImagePickerDialog(context),
+              ),
 
               // Profile Options
               Expanded(child: _buildProfileOptions(context)),
@@ -749,80 +765,9 @@ class _CargoOwnerProfileTab extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader(UserModel user) {
-    return Container(
-      height: 200,
-      decoration: const BoxDecoration(
-        color: Color(0xFF08914D),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Profile Picture
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.white,
-                child: user.profilePictureUrl != null
-                    ? ClipOval(
-                        child: Image.network(
-                          user.profilePictureUrl!,
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                    : const Icon(
-                        Icons.person,
-                        size: 50,
-                        color: Color(0xFF08914D),
-                      ),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Colors.orange,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt,
-                    size: 16,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            user.fullName,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            user.email,
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildProfileOptions(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -871,19 +816,33 @@ class _CargoOwnerProfileTab extends StatelessWidget {
                     );
                   },
                 ),
-                const Divider(height: 1, indent: 56),
-                _buildProfileOption(
-                  icon: Icons.logout,
-                  title: 'Log out',
-                  isDestructive: true,
-                  onTap: () {
-                    // Handle logout
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Logout - Coming Soon!')),
-                    );
-                  },
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Logout button as separate container
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.red, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
                 ),
               ],
+            ),
+            child: _buildProfileOption(
+              icon: Icons.logout,
+              title: 'Log out',
+              isDestructive: true,
+              onTap: () {
+                showLogoutConfirmation(context);
+              },
             ),
           ),
         ],

@@ -215,6 +215,14 @@ class ProfileProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Clear user data on logout
+  void logout() {
+    _currentUser = null;
+    _isLoading = false;
+    _error = null;
+    notifyListeners();
+  }
+
   // Private helper methods
   void _setLoading(bool loading) {
     _isLoading = loading;

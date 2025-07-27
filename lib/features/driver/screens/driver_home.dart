@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/models/booking_model.dart';
+import '../../../core/models/user_model.dart';
 import '../../../core/enums/app_enums.dart';
 import '../../profile/providers/profile_provider.dart';
 import '../../booking/providers/booking_provider.dart';
+import '../../../providers/auth_provider.dart';
+import '../../../widgets/profile_header.dart';
+import '../../../mixins/image_picker_mixin.dart';
+import '../../../mixins/logout_mixin.dart';
 
 class DriverHome extends StatefulWidget {
   const DriverHome({super.key});
@@ -327,16 +332,19 @@ class _DriverHistoryTab extends StatelessWidget {
   }
 }
 
-class _DriverProfileTab extends StatelessWidget {
+class _DriverProfileTab extends StatefulWidget {
   const _DriverProfileTab();
 
   @override
+  State<_DriverProfileTab> createState() => _DriverProfileTabState();
+}
+
+class _DriverProfileTabState extends State<_DriverProfileTab>
+    with ImagePickerMixin, LogoutMixin {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        automaticallyImplyLeading: false,
-      ),
+      backgroundColor: Colors.white,
       body: Consumer<ProfileProvider>(
         builder: (context, profileProvider, child) {
           final user = profileProvider.currentUser;
@@ -345,153 +353,214 @@ class _DriverProfileTab extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Profile Header
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage: user.profilePictureUrl != null
-                      ? NetworkImage(user.profilePictureUrl!)
-                      : null,
-                  child: user.profilePictureUrl == null
-                      ? Text(
-                          user.firstName.isNotEmpty
-                              ? user.firstName[0].toUpperCase()
-                              : 'D',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                      : null,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  user.fullName,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  user.email,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-                ),
-                const SizedBox(height: 8),
+          return Column(
+            children: [
+              // Profile Header
+              ProfileHeader(
+                user: user,
+                onImageTap: () => showImagePickerDialog(context),
+              ),
 
-                // Driver Stats
-                Consumer<BookingProvider>(
-                  builder: (context, bookingProvider, child) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _ProfileStat(
-                          label: 'Jobs Completed',
-                          value: bookingProvider.completedBookingsCount
-                              .toString(),
-                        ),
-                        _ProfileStat(
-                          label: 'Rating',
-                          value: (user.rating ?? 0.0).toStringAsFixed(1),
-                        ),
-                        _ProfileStat(
-                          label: 'Total Earnings',
-                          value: '\$${user.totalEarnings}',
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 32),
-
-                // Profile Options
-                _ProfileOption(
-                  icon: Icons.edit,
-                  title: 'Edit Profile',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Edit Profile - Coming Soon!'),
-                      ),
-                    );
-                  },
-                ),
-                _ProfileOption(
-                  icon: Icons.card_membership,
-                  title: 'Driver License',
-                  subtitle: user.driverLicense ?? 'Add license details',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Driver License - Coming Soon!'),
-                      ),
-                    );
-                  },
-                ),
-                _ProfileOption(
-                  icon: Icons.directions_car,
-                  title: 'Vehicle Details',
-                  subtitle: user.primaryVehicle != null
-                      ? '${user.primaryVehicle!['type']} - ${user.primaryVehicle!['capacity']}'
-                      : 'Add vehicle details',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Vehicle Details - Coming Soon!'),
-                      ),
-                    );
-                  },
-                ),
-                _ProfileOption(
-                  icon: Icons.location_on,
-                  title: 'Address',
-                  subtitle: user.address != null
-                      ? 'Address on file'
-                      : 'Add your address',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Address - Coming Soon!')),
-                    );
-                  },
-                ),
-                _ProfileOption(
-                  icon: Icons.settings,
-                  title: 'Settings',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Settings - Coming Soon!')),
-                    );
-                  },
-                ),
-                _ProfileOption(
-                  icon: Icons.help,
-                  title: 'Help & Support',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Help & Support - Coming Soon!'),
-                      ),
-                    );
-                  },
-                ),
-                _ProfileOption(
-                  icon: Icons.logout,
-                  title: 'Logout',
-                  isDestructive: true,
-                  onTap: () {
-                    // TODO: Implement logout
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Logout - Coming Soon!')),
-                    );
-                  },
-                ),
-              ],
-            ),
+              // Profile Options
+              Expanded(child: _buildProfileOptions(context, user)),
+            ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildProfileOptions(BuildContext context, UserModel user) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Text(
+            user.fullName,
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          Text(
+            user.email,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 8),
+
+          // Driver Stats
+          Consumer<BookingProvider>(
+            builder: (context, bookingProvider, child) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _ProfileStat(
+                    label: 'Jobs Completed',
+                    value: bookingProvider.completedBookingsCount.toString(),
+                  ),
+                  _ProfileStat(
+                    label: 'Rating',
+                    value: (user.rating ?? 0.0).toStringAsFixed(1),
+                  ),
+                  _ProfileStat(
+                    label: 'Total Earnings',
+                    value: '\$${user.totalEarnings}',
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 32),
+
+          // Profile Options
+          _ProfileOption(
+            icon: Icons.edit,
+            title: 'Edit Profile',
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Edit Profile - Coming Soon!')),
+              );
+            },
+          ),
+          _ProfileOption(
+            icon: Icons.card_membership,
+            title: 'Driver License',
+            subtitle: user.driverLicense ?? 'Add license details',
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Driver License - Coming Soon!')),
+              );
+            },
+          ),
+          _ProfileOption(
+            icon: Icons.directions_car,
+            title: 'Vehicle Details',
+            subtitle: user.primaryVehicle != null
+                ? '${user.primaryVehicle!['type']} - ${user.primaryVehicle!['capacity']}'
+                : 'Add vehicle details',
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Vehicle Details - Coming Soon!')),
+              );
+            },
+          ),
+          _ProfileOption(
+            icon: Icons.location_on,
+            title: 'Address',
+            subtitle: user.address != null
+                ? 'Address on file'
+                : 'Add your address',
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Address - Coming Soon!')),
+              );
+            },
+          ),
+          _ProfileOption(
+            icon: Icons.settings,
+            title: 'Settings',
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Settings - Coming Soon!')),
+              );
+            },
+          ),
+          _ProfileOption(
+            icon: Icons.help,
+            title: 'Help & Support',
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Help & Support - Coming Soon!')),
+              );
+            },
+          ),
+          _ProfileOption(
+            icon: Icons.logout,
+            title: 'Logout',
+            isDestructive: true,
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Logout'),
+                    content: const Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+
+                          // Show loading indicator
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return const AlertDialog(
+                                content: Row(
+                                  children: [
+                                    CircularProgressIndicator(),
+                                    SizedBox(width: 16),
+                                    Text('Logging out...'),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+
+                          try {
+                            // Perform logout
+                            await Provider.of<AuthProvider>(
+                              context,
+                              listen: false,
+                            ).signOut();
+
+                            // Clear profile data
+                            Provider.of<ProfileProvider>(
+                              context,
+                              listen: false,
+                            ).logout();
+
+                            // Navigate to login screen and clear navigation stack
+                            if (context.mounted) {
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                '/login',
+                                (route) => false,
+                              );
+                            }
+                          } catch (e) {
+                            // Hide loading dialog and show error
+                            if (context.mounted) {
+                              Navigator.of(
+                                context,
+                              ).pop(); // Hide loading dialog
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Logout failed: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text('Logout'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
     );
   }
