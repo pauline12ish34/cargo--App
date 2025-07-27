@@ -6,7 +6,7 @@ import '../services/auth_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
-  
+
   UserModel? _user;
   bool _isLoading = false;
   String? _error;
@@ -43,7 +43,7 @@ class AuthProvider with ChangeNotifier {
     try {
       _setLoading(true);
       _clearError();
-      
+
       await _authService.signUpWithEmail(
         email: email,
         password: password,
@@ -51,7 +51,7 @@ class AuthProvider with ChangeNotifier {
         phoneNumber: phoneNumber,
         role: role,
       );
-      
+
       return true;
     } catch (e) {
       _setError('Registration error: ${e.toString()}');
@@ -70,9 +70,9 @@ class AuthProvider with ChangeNotifier {
     try {
       _setLoading(true);
       _clearError();
-      
+
       final credential = await FirebaseAuth.instance.signInAnonymously();
-      
+
       if (credential.user != null) {
         final userModel = UserModel(
           uid: credential.user!.uid,
@@ -91,10 +91,10 @@ class AuthProvider with ChangeNotifier {
             .collection('users')
             .doc(credential.user!.uid)
             .set(userModel.toFirestore());
-        
+
         _user = userModel;
       }
-      
+
       return true;
     } catch (e) {
       _setError(e.toString());
@@ -105,19 +105,16 @@ class AuthProvider with ChangeNotifier {
   }
 
   // Sign in
-  Future<bool> signIn({
-    required String email,
-    required String password,
-  }) async {
+  Future<bool> signIn({required String email, required String password}) async {
     try {
       _setLoading(true);
       _clearError();
-      
-      await _authService.signInWithEmail(
-        email: email,
-        password: password,
-      );
-      
+
+      await _authService.signInWithEmail(email: email, password: password);
+
+      // Load user data after successful sign in
+      _user = await _authService.getCurrentUserData();
+
       return true;
     } catch (e) {
       _setError(e.toString());
@@ -145,7 +142,7 @@ class AuthProvider with ChangeNotifier {
     try {
       _setLoading(true);
       _clearError();
-      
+
       await _authService.sendPasswordResetEmail(email);
       return true;
     } catch (e) {
@@ -161,13 +158,13 @@ class AuthProvider with ChangeNotifier {
     try {
       _setLoading(true);
       _clearError();
-      
+
       final user = _authService.currentUser;
       if (user != null && !user.emailVerified) {
         await user.sendEmailVerification();
         return true;
       }
-      
+
       return false;
     } catch (e) {
       _setError(e.toString());
@@ -191,6 +188,16 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  // Refresh current user data
+  Future<void> refreshUserData() async {
+    try {
+      _user = await _authService.getCurrentUserData();
+      notifyListeners();
+    } catch (e) {
+      _setError(e.toString());
+    }
+  }
+
   // Update profile
   Future<bool> updateProfile({
     String? name,
@@ -200,16 +207,16 @@ class AuthProvider with ChangeNotifier {
     try {
       _setLoading(true);
       _clearError();
-      
+
       await _authService.updateUserProfile(
         name: name,
         phoneNumber: phoneNumber,
         profileImageUrl: profileImageUrl,
       );
-      
+
       // Refresh user data
       _user = await _authService.getCurrentUserData();
-      
+
       return true;
     } catch (e) {
       _setError(e.toString());
@@ -231,7 +238,7 @@ class AuthProvider with ChangeNotifier {
     try {
       _setLoading(true);
       _clearError();
-      
+
       await _authService.updateDriverDocuments(
         driverLicense: driverLicense,
         nationalId: nationalId,
@@ -240,10 +247,10 @@ class AuthProvider with ChangeNotifier {
         vehicleCapacity: vehicleCapacity,
         vehicleImageUrl: vehicleImageUrl,
       );
-      
+
       // Refresh user data
       _user = await _authService.getCurrentUserData();
-      
+
       return true;
     } catch (e) {
       _setError(e.toString());
@@ -257,13 +264,13 @@ class AuthProvider with ChangeNotifier {
   Future<bool> updateDriverAvailability(bool isAvailable) async {
     try {
       await _authService.updateDriverAvailability(isAvailable);
-      
+
       // Update local user data
       if (_user != null && _user!.role == UserRole.driver) {
         _user = _user!.copyWith(isAvailable: isAvailable);
         notifyListeners();
       }
-      
+
       return true;
     } catch (e) {
       _setError(e.toString());

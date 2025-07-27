@@ -5,6 +5,8 @@ import '../providers/auth_provider.dart';
 import '../models/user_model.dart';
 
 class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
+
   @override
   _SignupScreenState createState() => _SignupScreenState();
 }
@@ -31,7 +33,7 @@ class _SignupScreenState extends State<SignupScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
+
     final success = await authProvider.signUp(
       email: emailController.text.trim(),
       password: passwordController.text,
@@ -70,12 +72,17 @@ class _SignupScreenState extends State<SignupScreen> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 6),
-                  const Text("Fill the form to continue",
-                      style: TextStyle(color: Colors.grey)),
+                  const Text(
+                    "Fill the form to continue",
+                    style: TextStyle(color: Colors.grey),
+                  ),
                   const SizedBox(height: 30),
-                  
+
                   // Role Selection
-                  const Text("I am a:", style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text(
+                    "I am a:",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -106,7 +113,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
+
                   TextFormField(
                     controller: nameController,
                     validator: (value) {
@@ -121,8 +128,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       hintText: "Full Name",
                       prefixIcon: const Icon(Icons.person_outline),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide.none),
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -133,7 +141,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your email';
                       }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      if (!RegExp(
+                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                      ).hasMatch(value)) {
                         return 'Please enter a valid email';
                       }
                       return null;
@@ -144,8 +154,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       hintText: "Email",
                       prefixIcon: const Icon(Icons.email_outlined),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide.none),
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -156,7 +167,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your phone number';
                       }
-                      if (!RegExp(r'^\+?[0-9]{10,}$').hasMatch(value.replaceAll(' ', ''))) {
+                      if (!RegExp(
+                        r'^\+?[0-9]{10,}$',
+                      ).hasMatch(value.replaceAll(' ', ''))) {
                         return 'Please enter a valid phone number';
                       }
                       return null;
@@ -167,8 +180,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       hintText: "Phone number (+250...)",
                       prefixIcon: const Icon(Icons.phone_android),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide.none),
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -190,9 +204,11 @@ class _SignupScreenState extends State<SignupScreen> {
                       hintText: "Password",
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword 
-                          ? Icons.visibility_outlined 
-                          : Icons.visibility_off_outlined),
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
                         onPressed: () {
                           setState(() {
                             _obscurePassword = !_obscurePassword;
@@ -200,8 +216,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         },
                       ),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide.none),
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -211,11 +228,15 @@ class _SignupScreenState extends State<SignupScreen> {
                       backgroundColor: const Color(0xFF08914D),
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     child: authProvider.isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("SIGNUP", style: TextStyle(color: Colors.white)),
+                        : const Text(
+                            "SIGNUP",
+                            style: TextStyle(color: Colors.white),
+                          ),
                   ),
                   const SizedBox(height: 20),
                   const Center(child: Text("Or continue with")),
@@ -237,11 +258,13 @@ class _SignupScreenState extends State<SignupScreen> {
                       const Text("You already have an account?"),
                       TextButton(
                         onPressed: () => Navigator.pushNamed(context, '/login'),
-                        child: const Text("LOGIN",
-                            style: TextStyle(fontWeight: FontWeight.w600)),
+                        child: const Text(
+                          "LOGIN",
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),

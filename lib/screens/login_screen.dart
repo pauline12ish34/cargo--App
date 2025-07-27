@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -25,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
+
     final success = await authProvider.signIn(
       email: emailController.text.trim(),
       password: passwordController.text,
@@ -61,8 +63,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 6),
-                  const Text("Fill the form to continue",
-                      style: TextStyle(color: Colors.grey)),
+                  const Text(
+                    "Fill the form to continue",
+                    style: TextStyle(color: Colors.grey),
+                  ),
                   const SizedBox(height: 30),
                   TextFormField(
                     controller: emailController,
@@ -71,7 +75,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your email';
                       }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      if (!RegExp(
+                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                      ).hasMatch(value)) {
                         return 'Please enter a valid email';
                       }
                       return null;
@@ -82,8 +88,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       hintText: "Email",
                       prefixIcon: const Icon(Icons.email_outlined),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide.none),
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -102,9 +109,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       hintText: "Password",
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword 
-                          ? Icons.visibility_outlined 
-                          : Icons.visibility_off_outlined),
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
                         onPressed: () {
                           setState(() {
                             _obscurePassword = !_obscurePassword;
@@ -112,37 +121,47 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide.none),
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: authProvider.isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF08914D),
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8))),
+                      backgroundColor: const Color(0xFF08914D),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                     child: authProvider.isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("LOGIN", style: TextStyle(color: Colors.white)),
+                        : const Text(
+                            "LOGIN",
+                            style: TextStyle(color: Colors.white),
+                          ),
                   ),
                   const SizedBox(height: 12),
                   Center(
                     child: TextButton(
                       onPressed: () {
-                          Navigator.pushNamed(context, '/forgot-password');
+                        Navigator.pushNamed(context, '/forgot-password');
                       },
-                      child: const Text("Forgot Password?",
-                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      child: const Text(
+                        "Forgot Password?",
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
                   const Center(child: Text("You don't have an account?")),
                   TextButton(
                     onPressed: () => Navigator.pushNamed(context, '/signup'),
-                    child: const Text("SIGN UP",
-                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    child: const Text(
+                      "SIGN UP",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   const Divider(),

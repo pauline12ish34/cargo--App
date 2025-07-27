@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class WelcomeScreen extends StatelessWidget {
+  const WelcomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,13 +16,12 @@ class WelcomeScreen extends StatelessWidget {
             const SizedBox(height: 30),
             const Text(
               "Welcome to CargoLink",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const Text("Fill the form to continue",
-                style: TextStyle(color: Colors.grey)),
+            const Text(
+              "Fill the form to continue",
+              style: TextStyle(color: Colors.grey),
+            ),
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () => Navigator.pushNamed(context, '/signup'),
@@ -28,7 +29,8 @@ class WelcomeScreen extends StatelessWidget {
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor: const Color(0xFF08914D),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               child: const Text("CREATE ACCOUNT"),
             ),
@@ -39,10 +41,13 @@ class WelcomeScreen extends StatelessWidget {
                 minimumSize: const Size(double.infinity, 50),
                 side: BorderSide(color: const Color(0xFF08914D)),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-              child: const Text("LOGIN",
-                  style: TextStyle(color: Color(0xFF08914D))),
+              child: const Text(
+                "LOGIN",
+                style: TextStyle(color: Color(0xFF08914D)),
+              ),
             ),
           ],
         ),

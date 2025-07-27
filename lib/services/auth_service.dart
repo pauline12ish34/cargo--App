@@ -146,8 +146,9 @@ class AuthService {
           await user.updateDisplayName(name);
         }
         if (phoneNumber != null) updates['phoneNumber'] = phoneNumber;
-        if (profileImageUrl != null)
+        if (profileImageUrl != null) {
           updates['profileImageUrl'] = profileImageUrl;
+        }
 
         await _firestore.collection('users').doc(user.uid).update(updates);
       }
