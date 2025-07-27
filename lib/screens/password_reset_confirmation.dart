@@ -18,10 +18,10 @@ class PasswordResetConfirmation extends StatelessWidget {
               child: const Icon(Icons.arrow_back, size: 24, color: Colors.orange),
             ),
             const SizedBox(height: 60),
-            const Text('Password reset', style: titleStyle),
+            const Text('Check your email', style: titleStyle),
             const SizedBox(height: 10),
             const Text(
-              'Your password has been successfully reset. Click confirm to set a new password',
+              'We sent a password reset link to your email address. Click the link in your email to reset your password.',
               style: subtitleStyle,
             ),
             const SizedBox(height: 40),
@@ -30,7 +30,7 @@ class PasswordResetConfirmation extends StatelessWidget {
               height: 48,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/set-new-password');
+                  Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryGreen,
@@ -38,7 +38,7 @@ class PasswordResetConfirmation extends StatelessWidget {
                     borderRadius: BorderRadius.circular(borderRadius),
                   ),
                 ),
-                child: const Text('CONFIRM', style: buttonTextStyle),
+                child: const Text('BACK TO LOGIN', style: buttonTextStyle),
               ),
             ),
           ],

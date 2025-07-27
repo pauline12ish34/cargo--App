@@ -23,15 +23,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -65,5 +59,23 @@ class DefaultFirebaseOptions {
     messagingSenderId: '997204013284',
     projectId: 'cargo-app-9c5d5',
     storageBucket: 'cargo-app-9c5d5.firebasestorage.app',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyCD5d8C1-Kgt4nzKVy7Ci-CdvbbRzG0rAg',
+    appId: '1:997204013284:ios:055c43b6fa466c7b39bcf1',
+    messagingSenderId: '997204013284',
+    projectId: 'cargo-app-9c5d5',
+    storageBucket: 'cargo-app-9c5d5.firebasestorage.app',
+    iosBundleId: 'com.example.CargoApp',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyDw6bQzYP0JLVOScYNbu19duAIuLRL8A4U',
+    appId: '1:997204013284:ios:11fc0fcd2ed3665a39bcf1',
+    messagingSenderId: '997204013284',
+    projectId: 'cargo-app-9c5d5',
+    storageBucket: 'cargo-app-9c5d5.firebasestorage.app',
+    iosBundleId: 'com.example.cargoApp',
   );
 }
