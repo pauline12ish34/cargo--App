@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../constants.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -58,14 +59,11 @@ class _LoginScreenState extends State<LoginScreen> {
               child: ListView(
                 children: [
                   const SizedBox(height: 80),
-                  const Text(
-                    "Welcome to CargoLink",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
+                  const Text("Welcome to CargoLink", style: welcomeTitleStyle),
                   const SizedBox(height: 6),
                   const Text(
                     "Fill the form to continue",
-                    style: TextStyle(color: Colors.grey),
+                    style: welcomeSubtitleStyle,
                   ),
                   const SizedBox(height: 30),
                   TextFormField(
@@ -84,11 +82,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: const Color(0xFFF1F5F9),
+                      fillColor: inputBg,
                       hintText: "Email",
                       prefixIcon: const Icon(Icons.email_outlined),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(buttonBorderRadius),
                         borderSide: BorderSide.none,
                       ),
                     ),
@@ -105,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: const Color(0xFFF1F5F9),
+                      fillColor: inputBg,
                       hintText: "Password",
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
@@ -121,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(buttonBorderRadius),
                         borderSide: BorderSide.none,
                       ),
                     ),
@@ -129,13 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: authProvider.isLoading ? null : _handleLogin,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF08914D),
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
+                    style: primaryButtonStyle,
                     child: authProvider.isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(

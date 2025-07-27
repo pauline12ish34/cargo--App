@@ -8,8 +8,13 @@ import '../../profile/providers/profile_provider.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../widgets/profile_header.dart';
+import '../../../widgets/app_top_bar.dart';
+import '../../../widgets/search_bar.dart';
+import '../../../widgets/vehicle_card.dart';
+import '../../../widgets/stats_card.dart';
 import '../../../mixins/image_picker_mixin.dart';
 import '../../../mixins/logout_mixin.dart';
+import '../../../constants.dart';
 
 class CargoOwnerHome extends StatefulWidget {
   const CargoOwnerHome({super.key});
@@ -98,10 +103,10 @@ class _CargoOwnerHomeTab extends StatelessWidget {
             child: Column(
               children: [
                 // Top Bar
-                _buildTopBar(context, user),
+                AppTopBar(user: user),
 
                 // Search Bar
-                _buildSearchBar(),
+                const AppSearchBar(),
 
                 // Promotional Banner
                 _buildPromotionalBanner(context),
@@ -116,100 +121,13 @@ class _CargoOwnerHomeTab extends StatelessWidget {
     );
   }
 
-  Widget _buildTopBar(BuildContext context, UserModel? user) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          // Logo
-          const Text(
-            'Cargo',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-          const Text(
-            'Link',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF08914D),
-            ),
-          ),
-          const Spacer(),
-
-          // Welcome Message
-          Text(
-            'Welcome, ${user?.firstName ?? 'User'}',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(width: 12),
-
-          // Notification Bell
-          Stack(
-            children: [
-              const Icon(Icons.notifications_outlined, size: 24),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: const Text(
-                    '0',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE1F3ED),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: Colors.grey),
-          const SizedBox(width: 12),
-          const Text(
-            'Search a track in nearby location',
-            style: TextStyle(color: Colors.grey, fontSize: 16),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPromotionalBanner(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: defaultMargin,
       height: 160,
       decoration: BoxDecoration(
-        color: const Color(0xFF2D3748),
-        borderRadius: BorderRadius.circular(12),
+        color: darkBg,
+        borderRadius: BorderRadius.circular(cardBorderRadius),
         image: const DecorationImage(
           image: AssetImage('assets/images/welcome.png'),
           fit: BoxFit.cover,
@@ -217,7 +135,7 @@ class _CargoOwnerHomeTab extends StatelessWidget {
         ),
       ),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: defaultPadding,
         width: double.infinity,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,7 +164,7 @@ class _CargoOwnerHomeTab extends StatelessWidget {
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(buttonBorderRadius),
                 ),
               ),
               child: const Text('VIEW MORE'),
@@ -277,7 +195,7 @@ class _CargoOwnerHomeTab extends StatelessWidget {
                 child: const Text(
                   'See All',
                   style: TextStyle(
-                    color: Color(0xFF08914D),
+                    color: appGreen,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -291,112 +209,49 @@ class _CargoOwnerHomeTab extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             children: [
-              _buildVehicleCard(context, 'Nyarutarama', '800m (5mins away)'),
-              _buildVehicleCard(context, 'Kimironko', '800m (5mins away)'),
-              _buildVehicleCard(context, 'Nyarutarama', '800m (5mins away)'),
+              VehicleCard(
+                address: 'Nyarutarama',
+                details: 'Automatic | 5 tons | 80K RWF',
+                distance: '800m (5mins away)',
+                status: 'Available',
+                onViewDetails: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Vehicle Details - Coming Soon!'),
+                    ),
+                  );
+                },
+              ),
+              VehicleCard(
+                address: 'Kimironko',
+                details: 'Automatic | 5 tons | 80K RWF',
+                distance: '800m (5mins away)',
+                status: 'Available',
+                onViewDetails: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Vehicle Details - Coming Soon!'),
+                    ),
+                  );
+                },
+              ),
+              VehicleCard(
+                address: 'Nyarutarama',
+                details: 'Automatic | 5 tons | 80K RWF',
+                distance: '800m (5mins away)',
+                status: 'Available',
+                onViewDetails: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Vehicle Details - Coming Soon!'),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildVehicleCard(
-    BuildContext context,
-    String address,
-    String distance,
-  ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE1F3ED),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF08914D), width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Address: $address',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Automatic | 5 tons | 80K RWF',
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          size: 16,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          distance,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Vehicle Image Placeholder
-              Container(
-                width: 80,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.local_shipping,
-                  size: 40,
-                  color: Color(0xFF08914D),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: TextButton(
-              onPressed: () {
-                // Navigate to vehicle details
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Vehicle Details - Coming Soon!'),
-                  ),
-                );
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF08914D),
-                side: const BorderSide(color: Color(0xFF08914D)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text('View Details'),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -416,114 +271,34 @@ class _CargoOwnerBookingsTabState extends State<_CargoOwnerBookingsTab> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Top Bar
-            _buildTopBar(),
+        child: Consumer<ProfileProvider>(
+          builder: (context, profileProvider, child) {
+            final user = profileProvider.currentUser;
 
-            // Search Bar
-            _buildSearchBar(),
+            return Column(
+              children: [
+                // Top Bar
+                AppTopBar(user: user),
 
-            // Filter Tabs
-            _buildFilterTabs(),
+                // Search Bar
+                const AppSearchBar(),
 
-            // Bookings List
-            Expanded(child: _buildBookingsList()),
-          ],
+                // Filter Tabs
+                _buildFilterTabs(),
+
+                // Bookings List
+                Expanded(child: _buildBookingsList()),
+              ],
+            );
+          },
         ),
-      ),
-    );
-  }
-
-  Widget _buildTopBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          const Text(
-            'Cargo',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-          const Text(
-            'Link',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF08914D),
-            ),
-          ),
-          const Spacer(),
-
-          // Welcome Message
-          const Text(
-            'Welcome, Ange',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(width: 12),
-
-          // Notification Bell
-          Stack(
-            children: [
-              const Icon(Icons.notifications_outlined, size: 24),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: const Text(
-                    '0',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE1F3ED),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: Colors.grey),
-          const SizedBox(width: 12),
-          const Text(
-            'Search a track in nearby location',
-            style: TextStyle(color: Colors.grey, fontSize: 16),
-          ),
-        ],
       ),
     );
   }
 
   Widget _buildFilterTabs() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: defaultMargin,
       child: Row(
         children: [
           Expanded(child: _buildFilterTab('Upcoming', 0)),
@@ -547,14 +322,14 @@ class _CargoOwnerBookingsTabState extends State<_CargoOwnerBookingsTab> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF08914D) : const Color(0xFFE1F3ED),
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? appGreen : searchBg,
+          borderRadius: BorderRadius.circular(buttonBorderRadius),
         ),
         child: Text(
           title,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: isSelected ? Colors.white : const Color(0xFF08914D),
+            color: isSelected ? Colors.white : appGreen,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -588,100 +363,15 @@ class _CargoOwnerBookingsTabState extends State<_CargoOwnerBookingsTab> {
           itemCount: 3, // Show 3 sample bookings
           itemBuilder: (context, index) {
             final addresses = ['Kimironko', 'Nyarutarama', 'Nyarutarama'];
-            return _buildBookingCard(addresses[index]);
+            return VehicleCard(
+              address: addresses[index],
+              details: 'Automatic | 5 tons | 80K RWF',
+              distance: '800m (5mins away)',
+              status: 'Booked',
+            );
           },
         );
       },
-    );
-  }
-
-  Widget _buildBookingCard(String address) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE1F3ED),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF08914D), width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Address: $address',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Automatic | 5 tons | 80K RWF',
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          size: 16,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          '800m (5mins away)',
-                          style: TextStyle(color: Colors.grey, fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Vehicle Image Placeholder
-              Container(
-                width: 80,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.local_shipping,
-                  size: 40,
-                  color: Color(0xFF08914D),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE1F3ED),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFF08914D)),
-              ),
-              child: const Text(
-                'Booked',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xFF08914D),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -692,36 +382,47 @@ class _CargoOwnerHistoryTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Booking History'),
-        automaticallyImplyLeading: false,
-      ),
-      body: Consumer<BookingProvider>(
-        builder: (context, bookingProvider, child) {
-          final completedBookings = bookingProvider.completedBookings;
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Consumer2<ProfileProvider, BookingProvider>(
+          builder: (context, profileProvider, bookingProvider, child) {
+            final user = profileProvider.currentUser;
+            final completedBookings = bookingProvider.completedBookings;
 
-          if (completedBookings.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.history, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('No completed bookings yet'),
-                ],
-              ),
+            return Column(
+              children: [
+                // Top Bar
+                AppTopBar(user: user),
+
+                // Content
+                Expanded(
+                  child: completedBookings.isEmpty
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.history, size: 64, color: Colors.grey),
+                              SizedBox(height: 16),
+                              Text('No completed bookings yet'),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: defaultPadding,
+                          itemCount: completedBookings.length,
+                          itemBuilder: (context, index) {
+                            final booking = completedBookings[index];
+                            return _BookingListItem(
+                              booking: booking,
+                              showRating: true,
+                            );
+                          },
+                        ),
+                ),
+              ],
             );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: completedBookings.length,
-            itemBuilder: (context, index) {
-              final booking = completedBookings[index];
-              return _BookingListItem(booking: booking, showRating: true);
-            },
-          );
-        },
+          },
+        ),
       ),
     );
   }
@@ -776,23 +477,12 @@ class _CargoOwnerProfileTabState extends State<_CargoOwnerProfileTab>
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF2D3748),
+              color: textDark,
             ),
           ),
           const SizedBox(height: 16),
           Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
+            decoration: cardDecoration,
             child: Column(
               children: [
                 _buildProfileOption(
@@ -825,7 +515,7 @@ class _CargoOwnerProfileTabState extends State<_CargoOwnerProfileTab>
             width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(cardBorderRadius),
               border: Border.all(color: Colors.red, width: 1),
               boxShadow: [
                 BoxShadow(
@@ -857,109 +547,21 @@ class _CargoOwnerProfileTabState extends State<_CargoOwnerProfileTab>
     bool isDestructive = false,
   }) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: isDestructive ? Colors.red : const Color(0xFF64748B),
-      ),
+      leading: Icon(icon, color: isDestructive ? Colors.red : textGray),
       title: Text(
         title,
         style: TextStyle(
-          color: isDestructive ? Colors.red : const Color(0xFF2D3748),
+          color: isDestructive ? Colors.red : textDark,
           fontWeight: FontWeight.w500,
         ),
       ),
-      trailing: const Icon(Icons.chevron_right, color: Color(0xFF64748B)),
+      trailing: const Icon(Icons.chevron_right, color: textGray),
       onTap: onTap,
     );
   }
 }
 
 // Helper Widgets
-
-class _StatsCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _StatsCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: 24),
-                const Spacer(),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(title, style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ActionCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _ActionCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, size: 32, color: Theme.of(context).primaryColor),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _BookingListItem extends StatelessWidget {
   final Booking booking;
@@ -1042,35 +644,5 @@ class _BookingListItem extends StatelessWidget {
       case BookingStatus.cancelled:
         return Icons.cancel;
     }
-  }
-}
-
-class _ProfileOption extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final VoidCallback onTap;
-  final bool isDestructive;
-
-  const _ProfileOption({
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    required this.onTap,
-    this.isDestructive = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon, color: isDestructive ? Colors.red : null),
-      title: Text(
-        title,
-        style: TextStyle(color: isDestructive ? Colors.red : null),
-      ),
-      subtitle: subtitle != null ? Text(subtitle!) : null,
-      trailing: const Icon(Icons.chevron_right),
-      onTap: onTap,
-    );
   }
 }

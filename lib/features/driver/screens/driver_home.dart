@@ -7,8 +7,11 @@ import '../../profile/providers/profile_provider.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../widgets/profile_header.dart';
+import '../../../widgets/stats_card.dart';
+import '../../../widgets/app_top_bar.dart';
 import '../../../mixins/image_picker_mixin.dart';
 import '../../../mixins/logout_mixin.dart';
+import '../../../constants.dart';
 
 class DriverHome extends StatefulWidget {
   const DriverHome({super.key});
@@ -88,140 +91,120 @@ class _DriverHomeTab extends StatelessWidget {
         final user = profileProvider.currentUser;
 
         return Scaffold(
-          appBar: AppBar(
-            title: Text('Welcome, ${user?.firstName ?? 'Driver'}'),
-            automaticallyImplyLeading: false,
-            elevation: 0,
-            actions: [
-              // Availability Toggle
-              Consumer<ProfileProvider>(
-                builder: (context, provider, child) {
-                  final isAvailable = user?.isAvailable ?? false;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Row(
-                      children: [
-                        Text(
-                          isAvailable ? 'Available' : 'Offline',
-                          style: TextStyle(
-                            color: isAvailable ? Colors.green : Colors.red,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Switch(
-                          value: isAvailable,
-                          onChanged: (value) {
-                            provider.updateProfileField(isAvailable: value);
-                          },
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
+          backgroundColor: Colors.white,
+          body: SafeArea(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Quick Stats Cards
-                Row(
-                  children: [
-                    Expanded(
-                      child: _StatsCard(
-                        title: 'Active Jobs',
-                        value: bookingProvider.confirmedBookings.length
-                            .toString(),
-                        icon: Icons.local_shipping,
-                        color: Colors.blue,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _StatsCard(
-                        title: 'Completed',
-                        value: bookingProvider.completedBookingsCount
-                            .toString(),
-                        icon: Icons.check_circle,
-                        color: Colors.green,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                // Top Bar
+                AppTopBar(user: user),
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: _StatsCard(
-                        title: 'Available Jobs',
-                        value: bookingProvider.availableBookings.length
-                            .toString(),
-                        icon: Icons.work,
-                        color: Colors.orange,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _StatsCard(
-                        title: 'Rating',
-                        value: (user?.rating ?? 0.0).toStringAsFixed(1),
-                        icon: Icons.star,
-                        color: Colors.amber,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Active Jobs Section
-                Text(
-                  'Active Jobs',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-
+                // Content
                 Expanded(
-                  child: bookingProvider.isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : bookingProvider.confirmedBookings.isEmpty &&
-                            bookingProvider.inProgressBookings.isEmpty
-                      ? const Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.work_off,
-                                size: 64,
-                                color: Colors.grey,
-                              ),
-                              SizedBox(height: 16),
-                              Text('No active jobs'),
-                              Text('Check the Jobs tab for available work'),
-                            ],
-                          ),
-                        )
-                      : ListView(
+                  child: Padding(
+                    padding: defaultPadding,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Quick Stats Cards
+                        Row(
                           children: [
-                            ...bookingProvider.inProgressBookings.map(
-                              (booking) => _BookingListItem(
-                                booking: booking,
-                                isDriver: true,
+                            Expanded(
+                              child: StatsCard(
+                                title: 'Active Jobs',
+                                value: bookingProvider.confirmedBookings.length
+                                    .toString(),
+                                icon: Icons.local_shipping,
+                                color: Colors.blue,
                               ),
                             ),
-                            ...bookingProvider.confirmedBookings.map(
-                              (booking) => _BookingListItem(
-                                booking: booking,
-                                isDriver: true,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: StatsCard(
+                                title: 'Completed',
+                                value: bookingProvider.completedBookingsCount
+                                    .toString(),
+                                icon: Icons.check_circle,
+                                color: Colors.green,
                               ),
                             ),
                           ],
                         ),
+                        const SizedBox(height: 16),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: StatsCard(
+                                title: 'Available Jobs',
+                                value: bookingProvider.availableBookings.length
+                                    .toString(),
+                                icon: Icons.work,
+                                color: Colors.orange,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: StatsCard(
+                                title: 'Rating',
+                                value: (user?.rating ?? 0.0).toStringAsFixed(1),
+                                icon: Icons.star,
+                                color: Colors.amber,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Active Jobs Section
+                        Text(
+                          'Active Jobs',
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 16),
+
+                        Expanded(
+                          child: bookingProvider.isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : bookingProvider.confirmedBookings.isEmpty &&
+                                    bookingProvider.inProgressBookings.isEmpty
+                              ? const Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.work_off,
+                                        size: 64,
+                                        color: Colors.grey,
+                                      ),
+                                      SizedBox(height: 16),
+                                      Text('No active jobs'),
+                                      Text(
+                                        'Check the Jobs tab for available work',
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : ListView(
+                                  children: [
+                                    ...bookingProvider.inProgressBookings.map(
+                                      (booking) => _BookingListItem(
+                                        booking: booking,
+                                        isDriver: true,
+                                      ),
+                                    ),
+                                    ...bookingProvider.confirmedBookings.map(
+                                      (booking) => _BookingListItem(
+                                        booking: booking,
+                                        isDriver: true,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -238,50 +221,51 @@ class _DriverJobsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Available Jobs'),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              Provider.of<BookingProvider>(
-                context,
-                listen: false,
-              ).loadAvailableBookings();
-            },
-          ),
-        ],
-      ),
-      body: Consumer<BookingProvider>(
-        builder: (context, bookingProvider, child) {
-          if (bookingProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Consumer2<ProfileProvider, BookingProvider>(
+          builder: (context, profileProvider, bookingProvider, child) {
+            final user = profileProvider.currentUser;
 
-          if (bookingProvider.availableBookings.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.work_off, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('No available jobs'),
-                  Text('Check back later for new opportunities'),
-                ],
-              ),
+            return Column(
+              children: [
+                // Top Bar
+                AppTopBar(user: user),
+
+                // Content
+                Expanded(
+                  child: bookingProvider.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : bookingProvider.availableBookings.isEmpty
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.work_off,
+                                size: 64,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 16),
+                              Text('No available jobs'),
+                              Text('Check back later for new opportunities'),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: defaultPadding,
+                          itemCount: bookingProvider.availableBookings.length,
+                          itemBuilder: (context, index) {
+                            final booking =
+                                bookingProvider.availableBookings[index];
+                            return _AvailableJobCard(booking: booking);
+                          },
+                        ),
+                ),
+              ],
             );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: bookingProvider.availableBookings.length,
-            itemBuilder: (context, index) {
-              final booking = bookingProvider.availableBookings[index];
-              return _AvailableJobCard(booking: booking);
-            },
-          );
-        },
+          },
+        ),
       ),
     );
   }
@@ -293,40 +277,48 @@ class _DriverHistoryTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Job History'),
-        automaticallyImplyLeading: false,
-      ),
-      body: Consumer<BookingProvider>(
-        builder: (context, bookingProvider, child) {
-          final completedBookings = bookingProvider.completedBookings;
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Consumer2<ProfileProvider, BookingProvider>(
+          builder: (context, profileProvider, bookingProvider, child) {
+            final user = profileProvider.currentUser;
+            final completedBookings = bookingProvider.completedBookings;
 
-          if (completedBookings.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.history, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('No completed jobs yet'),
-                ],
-              ),
+            return Column(
+              children: [
+                // Top Bar
+                AppTopBar(user: user),
+
+                // Content
+                Expanded(
+                  child: completedBookings.isEmpty
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.history, size: 64, color: Colors.grey),
+                              SizedBox(height: 16),
+                              Text('No completed jobs yet'),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: defaultPadding,
+                          itemCount: completedBookings.length,
+                          itemBuilder: (context, index) {
+                            final booking = completedBookings[index];
+                            return _BookingListItem(
+                              booking: booking,
+                              isDriver: true,
+                              showRating: true,
+                            );
+                          },
+                        ),
+                ),
+              ],
             );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: completedBookings.length,
-            itemBuilder: (context, index) {
-              final booking = completedBookings[index];
-              return _BookingListItem(
-                booking: booking,
-                isDriver: true,
-                showRating: true,
-              );
-            },
-          );
-        },
+          },
+        ),
       ),
     );
   }
@@ -567,49 +559,6 @@ class _DriverProfileTabState extends State<_DriverProfileTab>
 }
 
 // Helper Widgets
-
-class _StatsCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _StatsCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: 24),
-                const Spacer(),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(title, style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _BookingListItem extends StatelessWidget {
   final Booking booking;
