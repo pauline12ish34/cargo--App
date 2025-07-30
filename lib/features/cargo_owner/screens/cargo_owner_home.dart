@@ -1,20 +1,13 @@
+import 'package:cargo_app/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
 import '../../../core/models/booking_model.dart';
 import '../../../core/models/user_model.dart';
-import '../../../core/enums/app_enums.dart';
-import '../../profile/providers/profile_provider.dart';
-import '../../booking/providers/booking_provider.dart';
+import '../../../features/booking/providers/booking_provider.dart';
 import '../../../providers/auth_provider.dart';
-import '../../../widgets/profile_header.dart';
-import '../../../widgets/app_top_bar.dart';
-import '../../../widgets/search_bar.dart';
-import '../../../widgets/vehicle_card.dart';
-import '../../../widgets/stats_card.dart';
-import '../../../mixins/image_picker_mixin.dart';
-import '../../../mixins/logout_mixin.dart';
-import '../../../constants.dart';
+import '../../../features/profile/providers/profile_provider.dart';
+import '../../../screens/create_job_screen.dart';
+import '../../../screens/job_details_screen.dart';
 
 class CargoOwnerHome extends StatefulWidget {
   const CargoOwnerHome({super.key});
@@ -35,18 +28,11 @@ class _CargoOwnerHomeState extends State<CargoOwnerHome> {
   }
 
   void _loadBookings() {
-    final profileProvider = Provider.of<ProfileProvider>(
-      context,
-      listen: false,
-    );
-    final bookingProvider = Provider.of<BookingProvider>(
-      context,
-      listen: false,
-    );
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
 
-    final user = profileProvider.currentUser;
-    if (user != null) {
-      bookingProvider.loadUserBookings(user.uid, isCargoOwner: true);
+    if (authProvider.user != null) {
+      bookingProvider.loadCargoOwnerBookings(authProvider.user!.uid);
     }
   }
 
@@ -58,317 +44,278 @@ class _CargoOwnerHomeState extends State<CargoOwnerHome> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      const _DashboardTab(),
+      const _MyJobsTab(),
+      const _ProfileTab(),
+    ];
+
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: const [
-          _CargoOwnerHomeTab(),
-          _CargoOwnerBookingsTab(),
-          _CargoOwnerHistoryTab(),
-          _CargoOwnerProfileTab(),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: const Color(0xFF08914D),
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_shipping),
-            label: 'Bookings',
+      appBar: AppBar(
+        title: const Text('CargoLink'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {
+              // TODO: Implement notifications
+            },
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
+      body: pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.work),
+            label: 'My Jobs',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.blue,
+        onTap: _onItemTapped,
+      ),
+      floatingActionButton: _selectedIndex == 0 || _selectedIndex == 1
+          ? FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CreateJobScreen(),
+            ),
+          ).then((_) => _loadBookings());
+        },
+        backgroundColor: appGreen,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('New Job'),
+      )
+          : null,
     );
   }
 }
 
-class _CargoOwnerHomeTab extends StatelessWidget {
-  const _CargoOwnerHomeTab();
+class _DashboardTab extends StatelessWidget {
+  const _DashboardTab();
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<ProfileProvider, BookingProvider>(
-      builder: (context, profileProvider, bookingProvider, child) {
-        final user = profileProvider.currentUser;
+    return Consumer2<AuthProvider, BookingProvider>(
+      builder: (context, authProvider, bookingProvider, child) {
+        final user = authProvider.user;
+        final recentBookings = bookingProvider.myBookings.take(3).toList();
 
-        return Scaffold(
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            child: Column(
-              children: [
-                // Top Bar
-                AppTopBar(user: user),
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Welcome Section
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue.shade400, Colors.blue.shade600],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome back, ${user?.name ?? 'User'}!',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Need cargo transportation? Create a new job to get started.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
 
-                // Search Bar
-                const AppSearchBar(),
+              // Quick Stats
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatCard(
+                      title: 'Total Jobs',
+                      value: '${bookingProvider.myBookings.length}',
+                      icon: Icons.work,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _StatCard(
+                      title: 'Completed',
+                      value: '${bookingProvider.myBookings.where((b) => b.status == BookingStatus.completed).length}',
+                      icon: Icons.check_circle,
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatCard(
+                      title: 'Pending',
+                      value: '${bookingProvider.myBookings.where((b) => b.status == BookingStatus.pending).length}',
+                      icon: Icons.pending,
+                      color: Colors.orange,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _StatCard(
+                      title: 'In Progress',
+                      value: '${bookingProvider.myBookings.where((b) => b.status == BookingStatus.accepted || b.status == BookingStatus.inProgress).length}',
+                      icon: Icons.local_shipping,
+                      color: Colors.purple,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
 
-                // Promotional Banner
-                _buildPromotionalBanner(context),
+              // Recent Jobs Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Recent Jobs',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Switch to My Jobs tab
+                      if (context.findAncestorStateOfType<_CargoOwnerHomeState>() != null) {
+                        context.findAncestorStateOfType<_CargoOwnerHomeState>()!._onItemTapped(1);
+                      }
+                    },
+                    child: const Text('View All'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
 
-                // Available Vehicles Section
-                Expanded(child: _buildAvailableVehiclesSection(context)),
-              ],
-            ),
+              if (bookingProvider.isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (recentBookings.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.work_off,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'No jobs yet',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Create your first job to get started',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                ...recentBookings.map((booking) => _JobCard(booking: booking)),
+            ],
           ),
         );
       },
     );
   }
-
-  Widget _buildPromotionalBanner(BuildContext context) {
-    return Container(
-      margin: defaultMargin,
-      height: 160,
-      decoration: BoxDecoration(
-        color: darkBg,
-        borderRadius: BorderRadius.circular(cardBorderRadius),
-        image: const DecorationImage(
-          image: AssetImage('assets/images/welcome.png'),
-          fit: BoxFit.cover,
-          opacity: 0.3,
-        ),
-      ),
-      child: Container(
-        padding: defaultPadding,
-        width: double.infinity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Book A Truck For Your Cargo\nQuickly And Easier!',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                // Navigate to booking creation
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Create Booking - Coming Soon!'),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 40),
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(buttonBorderRadius),
-                ),
-              ),
-              child: const Text('VIEW MORE'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAvailableVehiclesSection(BuildContext context) {
-    return Column(
-      children: [
-        // Section Header
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              const Text(
-                'Available Cars',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const Spacer(),
-              TextButton(
-                onPressed: () {
-                  // Navigate to see all vehicles
-                },
-                child: const Text(
-                  'See All',
-                  style: TextStyle(
-                    color: appGreen,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Available Vehicles List
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            children: [
-              VehicleCard(
-                address: 'Nyarutarama',
-                details: 'Automatic | 5 tons | 80K RWF',
-                distance: '800m (5mins away)',
-                status: 'Available',
-                onViewDetails: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Vehicle Details - Coming Soon!'),
-                    ),
-                  );
-                },
-              ),
-              VehicleCard(
-                address: 'Kimironko',
-                details: 'Automatic | 5 tons | 80K RWF',
-                distance: '800m (5mins away)',
-                status: 'Available',
-                onViewDetails: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Vehicle Details - Coming Soon!'),
-                    ),
-                  );
-                },
-              ),
-              VehicleCard(
-                address: 'Nyarutarama',
-                details: 'Automatic | 5 tons | 80K RWF',
-                distance: '800m (5mins away)',
-                status: 'Available',
-                onViewDetails: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Vehicle Details - Coming Soon!'),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 }
 
-class _CargoOwnerBookingsTab extends StatefulWidget {
-  const _CargoOwnerBookingsTab();
-
-  @override
-  State<_CargoOwnerBookingsTab> createState() => _CargoOwnerBookingsTabState();
-}
-
-class _CargoOwnerBookingsTabState extends State<_CargoOwnerBookingsTab> {
-  int _selectedFilterIndex = 0;
+class _MyJobsTab extends StatelessWidget {
+  const _MyJobsTab();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Consumer<ProfileProvider>(
-          builder: (context, profileProvider, child) {
-            final user = profileProvider.currentUser;
-
-            return Column(
-              children: [
-                // Top Bar
-                AppTopBar(user: user),
-
-                // Search Bar
-                const AppSearchBar(),
-
-                // Filter Tabs
-                _buildFilterTabs(),
-
-                // Bookings List
-                Expanded(child: _buildBookingsList()),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterTabs() {
-    return Container(
-      margin: defaultMargin,
-      child: Row(
-        children: [
-          Expanded(child: _buildFilterTab('Upcoming', 0)),
-          const SizedBox(width: 8),
-          Expanded(child: _buildFilterTab('Completed', 1)),
-          const SizedBox(width: 8),
-          Expanded(child: _buildFilterTab('Cancelled', 2)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterTab(String title, int index) {
-    final isSelected = _selectedFilterIndex == index;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedFilterIndex = index;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? appGreen : searchBg,
-          borderRadius: BorderRadius.circular(buttonBorderRadius),
-        ),
-        child: Text(
-          title,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: isSelected ? Colors.white : appGreen,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBookingsList() {
     return Consumer<BookingProvider>(
       builder: (context, bookingProvider, child) {
         if (bookingProvider.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (bookingProvider.userBookings.isEmpty) {
+        if (bookingProvider.myBookings.isEmpty) {
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.inbox, size: 64, color: Colors.grey),
+                Icon(
+                  Icons.work_off,
+                  size: 64,
+                  color: Colors.grey,
+                ),
                 SizedBox(height: 16),
-                Text('No bookings yet'),
-                Text('Create your first booking to get started'),
+                Text(
+                  'No jobs yet',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Create your first job to get started',
+                  style: TextStyle(color: Colors.grey),
+                ),
               ],
             ),
           );
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: 3, // Show 3 sample bookings
+          padding: const EdgeInsets.all(16),
+          itemCount: bookingProvider.myBookings.length,
           itemBuilder: (context, index) {
-            final addresses = ['Kimironko', 'Nyarutarama', 'Nyarutarama'];
-            return VehicleCard(
-              address: addresses[index],
-              details: 'Automatic | 5 tons | 80K RWF',
-              distance: '800m (5mins away)',
-              status: 'Booked',
-            );
+            final booking = bookingProvider.myBookings[index];
+            return _JobCard(booking: booking);
           },
         );
       },
@@ -376,273 +323,390 @@ class _CargoOwnerBookingsTabState extends State<_CargoOwnerBookingsTab> {
   }
 }
 
-class _CargoOwnerHistoryTab extends StatelessWidget {
-  const _CargoOwnerHistoryTab();
+class _ProfileTab extends StatelessWidget {
+  const _ProfileTab();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Consumer2<ProfileProvider, BookingProvider>(
-          builder: (context, profileProvider, bookingProvider, child) {
-            final user = profileProvider.currentUser;
-            final completedBookings = bookingProvider.completedBookings;
+    return Consumer2<AuthProvider, ProfileProvider>(
+      builder: (context, authProvider, profileProvider, child) {
+        final user = profileProvider.currentUser ?? authProvider.user as UserModel;
 
-            return Column(
-              children: [
-                // Top Bar
-                AppTopBar(user: user),
-
-                // Content
-                Expanded(
-                  child: completedBookings.isEmpty
-                      ? const Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.history, size: 64, color: Colors.grey),
-                              SizedBox(height: 16),
-                              Text('No completed bookings yet'),
-                            ],
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: defaultPadding,
-                          itemCount: completedBookings.length,
-                          itemBuilder: (context, index) {
-                            final booking = completedBookings[index];
-                            return _BookingListItem(
-                              booking: booking,
-                              showRating: true,
-                            );
-                          },
-                        ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class _CargoOwnerProfileTab extends StatefulWidget {
-  const _CargoOwnerProfileTab();
-
-  @override
-  State<_CargoOwnerProfileTab> createState() => _CargoOwnerProfileTabState();
-}
-
-class _CargoOwnerProfileTabState extends State<_CargoOwnerProfileTab>
-    with ImagePickerMixin, LogoutMixin {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Consumer<ProfileProvider>(
-        builder: (context, profileProvider, child) {
-          final user = profileProvider.currentUser;
-
-          if (user == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          return Column(
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
             children: [
               // Profile Header
-              ProfileHeader(
-                user: user,
-                onImageTap: () => showImagePickerDialog(context),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.blue,
+                      child: Text(
+                        user?.name.isNotEmpty == true
+                            ? user!.name[0].toUpperCase()
+                            : 'U',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      user?.name ?? 'User',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      user?.email ?? '',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'Cargo Owner',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(height: 24),
 
               // Profile Options
-              Expanded(child: _buildProfileOptions(context)),
+              _ProfileOption(
+                icon: Icons.person,
+                title: 'Edit Profile',
+                onTap: () {
+                  // TODO: Navigate to edit profile
+                },
+              ),
+              _ProfileOption(
+                icon: Icons.notifications,
+                title: 'Notifications',
+                onTap: () {
+                  // TODO: Navigate to notifications settings
+                },
+              ),
+              _ProfileOption(
+                icon: Icons.help,
+                title: 'Help & Support',
+                onTap: () {
+                  // TODO: Navigate to help
+                },
+              ),
+              _ProfileOption(
+                icon: Icons.info,
+                title: 'About',
+                onTap: () {
+                  // TODO: Navigate to about
+                },
+              ),
+              const SizedBox(height: 24),
+
+              // Logout Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await authProvider.signOut();
+                    if (context.mounted) {
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/',
+                            (route) => false,
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text('Logout'),
+                ),
+              ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
+}
 
-  Widget _buildProfileOptions(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+class _StatCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Profile',
+          Icon(icon, color: color, size: 32),
+          const SizedBox(height: 8),
+          Text(
+            value,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: textDark,
+              color: color,
             ),
           ),
-          const SizedBox(height: 16),
-          Container(
-            decoration: cardDecoration,
-            child: Column(
-              children: [
-                _buildProfileOption(
-                  icon: Icons.person_outline,
-                  title: 'Personal Data',
-                  onTap: () {
-                    // Navigate to personal data screen
-                    Navigator.pushNamed(context, '/personal-data');
-                  },
-                ),
-                const Divider(height: 1, indent: 56),
-                _buildProfileOption(
-                  icon: Icons.folder_outlined,
-                  title: 'Saved',
-                  onTap: () {
-                    // Navigate to saved items
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Saved Items - Coming Soon!'),
-                      ),
-                    );
-                  },
-                ),
-              ],
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade600,
             ),
-          ),
-          const SizedBox(height: 16),
-          // Logout button as separate container
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(cardBorderRadius),
-              border: Border.all(color: Colors.red, width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: _buildProfileOption(
-              icon: Icons.logout,
-              title: 'Log out',
-              isDestructive: true,
-              onTap: () {
-                showLogoutConfirmation(context);
-              },
-            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildProfileOption({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    bool isDestructive = false,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: isDestructive ? Colors.red : textGray),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isDestructive ? Colors.red : textDark,
-          fontWeight: FontWeight.w500,
+class _JobCard extends StatelessWidget {
+  final BookingModel booking;
+
+  const _JobCard({required this.booking});
+
+  @override
+  Widget build(BuildContext context) {
+    Color statusColor;
+    switch (booking.status) {
+      case BookingStatus.pending:
+        statusColor = Colors.orange;
+        break;
+      case BookingStatus.accepted:
+      case BookingStatus.inProgress:
+        statusColor = Colors.blue;
+        break;
+      case BookingStatus.completed:
+        statusColor = Colors.green;
+        break;
+      case BookingStatus.declined:
+      case BookingStatus.cancelled:
+        statusColor = Colors.red;
+        break;
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => JobDetailsScreen(booking: booking),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      booking.cargoDescription,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      booking.statusDisplayName,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      booking.pickupLocation,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  const Icon(Icons.flag, size: 16, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      booking.dropoffLocation,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.local_shipping, size: 16, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(
+                    booking.vehicleTypeDisplayName,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${booking.createdAt.day}/${booking.createdAt.month}/${booking.createdAt.year}',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+
+              // Show special indicators for declined jobs
+              if (booking.status == BookingStatus.declined) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 16, color: Colors.orange.shade700),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Tap to reassign to another driver',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.orange.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              // Show chat indicator for accepted jobs
+              if (booking.status == BookingStatus.accepted) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.chat, size: 16, color: Colors.blue.shade700),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Tap to chat with driver',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
-      trailing: const Icon(Icons.chevron_right, color: textGray),
-      onTap: onTap,
     );
   }
 }
 
-// Helper Widgets
+class _ProfileOption extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
 
-class _BookingListItem extends StatelessWidget {
-  final Booking booking;
-  final bool showRating;
-
-  const _BookingListItem({required this.booking, this.showRating = false});
+  const _ProfileOption({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _getStatusColor(),
-          child: Icon(_getStatusIcon(), color: Colors.white),
-        ),
-        title: Text(
-          booking.cargoDescription,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${booking.pickupLocation.address} → ${booking.deliveryLocation.address}',
-            ),
-            if (showRating && booking.rating != null)
-              Row(
-                children: [
-                  Icon(Icons.star, size: 16, color: Colors.amber),
-                  const SizedBox(width: 4),
-                  Text(booking.rating!.toStringAsFixed(1)),
-                ],
-              ),
-          ],
-        ),
-        trailing: Chip(
-          label: Text(
-            booking.status.toString().split('.').last.toUpperCase(),
-            style: const TextStyle(fontSize: 12),
-          ),
-          backgroundColor: _getStatusColor().withOpacity(0.1),
-          side: BorderSide(color: _getStatusColor()),
-        ),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Booking Details - Coming Soon!')),
-          );
-        },
-      ),
+    return ListTile(
+      leading: Icon(icon, color: Colors.blue),
+      title: Text(title),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
     );
-  }
-
-  Color _getStatusColor() {
-    switch (booking.status) {
-      case BookingStatus.pending:
-        return Colors.orange;
-      case BookingStatus.confirmed:
-        return Colors.blue;
-      case BookingStatus.inProgress:
-        return Colors.purple;
-      case BookingStatus.completed:
-        return Colors.green;
-      case BookingStatus.cancelled:
-        return Colors.red;
-    }
-  }
-
-  IconData _getStatusIcon() {
-    switch (booking.status) {
-      case BookingStatus.pending:
-        return Icons.schedule;
-      case BookingStatus.confirmed:
-        return Icons.check;
-      case BookingStatus.inProgress:
-        return Icons.local_shipping;
-      case BookingStatus.completed:
-        return Icons.check_circle;
-      case BookingStatus.cancelled:
-        return Icons.cancel;
-    }
   }
 }
