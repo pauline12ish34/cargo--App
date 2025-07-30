@@ -1,3 +1,4 @@
+import 'package:cargo_app/screens/car_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
@@ -215,11 +216,16 @@ class _CargoOwnerHomeTab extends StatelessWidget {
                 distance: '800m (5mins away)',
                 status: 'Available',
                 onViewDetails: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Vehicle Details - Coming Soon!'),
-                    ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RideDetailsPage()),
                   );
+
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   const SnackBar(
+                  //     content: Text('Vehicle Details - Coming Soon!'),
+                  //   ),
+                  // );
                 },
               ),
               VehicleCard(
@@ -228,11 +234,15 @@ class _CargoOwnerHomeTab extends StatelessWidget {
                 distance: '800m (5mins away)',
                 status: 'Available',
                 onViewDetails: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Vehicle Details - Coming Soon!'),
-                    ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RideDetailsPage()),
                   );
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   const SnackBar(
+                  //     content: Text('Vehicle Details - Coming Soon!'),
+                  //   ),
+                  // );
                 },
               ),
               VehicleCard(
@@ -241,11 +251,15 @@ class _CargoOwnerHomeTab extends StatelessWidget {
                 distance: '800m (5mins away)',
                 status: 'Available',
                 onViewDetails: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Vehicle Details - Coming Soon!'),
-                    ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RideDetailsPage()),
                   );
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   const SnackBar(
+                  //     content: Text('Vehicle Details - Coming Soon!'),
+                  //   ),
+                  // );
                 },
               ),
             ],

@@ -41,6 +41,7 @@ dependencies:
   firebase_auth: ^5.6.2
   cloud_firestore: ^5.6.11
   provider: ^6.1.2
+  flutter_rating_bar: ^4.0.1
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,7 @@ flutter:
   assets:
     - assets/images/Anywhere_you_are.svg
     - assets/images/At_anytime.svg
+    - assets/images/truck.jpg
     - assets/images/cargolink-logo.png
     - assets/images/frame1.svg
     - assets/images/splash-illustration.png
