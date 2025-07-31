@@ -24,7 +24,8 @@ class WelcomeScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.pushNamed(context, '/signup'),
               style: primaryButtonStyle,
-              child: const Text("CREATE ACCOUNT"),
+              child: const Text("CREATE ACCOUNT",
+              style: TextStyle(color: Colors.white)),
             ),
             const SizedBox(height: 10),
             OutlinedButton(

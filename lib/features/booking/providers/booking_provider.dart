@@ -1,292 +1,287 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../../../core/models/booking_model.dart';
 import '../../../core/repositories/booking_repository.dart';
-import '../../../core/enums/app_enums.dart';
 
-class BookingProvider extends ChangeNotifier {
+class BookingProvider with ChangeNotifier {
   final BookingRepository _bookingRepository;
-
-  List<Booking> _userBookings = [];
-  List<Booking> _availableBookings = [];
-  Booking? _selectedBooking;
-  bool _isLoading = false;
-  String? _error;
 
   BookingProvider(this._bookingRepository);
 
-  // Getters
-  List<Booking> get userBookings => _userBookings;
-  List<Booking> get availableBookings => _availableBookings;
-  Booking? get selectedBooking => _selectedBooking;
+  List<BookingModel> _myBookings = [];
+  List<BookingModel> _availableBookings = [];
+  bool _isLoading = false;
+  String? _error;
+
+  List<BookingModel> get myBookings => _myBookings;
+  List<BookingModel> get availableBookings => _availableBookings;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // Filter bookings by status
-  List<Booking> get pendingBookings =>
-      _userBookings.where((b) => b.status == BookingStatus.pending).toList();
-
-  List<Booking> get confirmedBookings =>
-      _userBookings.where((b) => b.status == BookingStatus.confirmed).toList();
-
-  List<Booking> get inProgressBookings =>
-      _userBookings.where((b) => b.status == BookingStatus.inProgress).toList();
-
-  List<Booking> get completedBookings =>
-      _userBookings.where((b) => b.status == BookingStatus.completed).toList();
-
-  // Create a new booking
-  Future<String?> createBooking(Booking booking) async {
-    _setLoading(true);
-    _error = null;
-
-    try {
-      final bookingId = await _bookingRepository.createBooking(booking);
-      await loadUserBookings(booking.cargoOwnerId, isCargoOwner: true);
-      _setLoading(false);
-      return bookingId;
-    } catch (e) {
-      _error = 'Failed to create booking: $e';
-      debugPrint('Error creating booking: $e');
-      _setLoading(false);
-      return null;
-    }
-  }
-
-  // Load user bookings (cargo owner or driver)
-  Future<void> loadUserBookings(
-    String userId, {
-    required bool isCargoOwner,
-  }) async {
-    _setLoading(true);
-    _error = null;
-
-    try {
-      if (isCargoOwner) {
-        _userBookings = await _bookingRepository.getBookingsByCargoOwner(
-          userId,
-        );
-      } else {
-        _userBookings = await _bookingRepository.getBookingsByDriver(userId);
-      }
-    } catch (e) {
-      _error = 'Failed to load bookings: $e';
-      debugPrint('Error loading user bookings: $e');
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  // Load available bookings for drivers
-  Future<void> loadAvailableBookings() async {
-    _setLoading(true);
-    _error = null;
-
-    try {
-      _availableBookings = await _bookingRepository.getAvailableBookings();
-    } catch (e) {
-      _error = 'Failed to load available bookings: $e';
-      debugPrint('Error loading available bookings: $e');
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  // Accept a booking (driver accepting)
-  Future<bool> acceptBooking(String bookingId, String driverId) async {
-    _setLoading(true);
-    _error = null;
-
-    try {
-      final booking = await _bookingRepository.getBookingById(bookingId);
-      if (booking != null) {
-        final updatedBooking = booking.copyWith(
-          driverId: driverId,
-          status: BookingStatus.confirmed,
-          updatedAt: DateTime.now(),
-        );
-        await _bookingRepository.updateBooking(updatedBooking);
-        await loadAvailableBookings(); // Refresh available bookings
-        _setLoading(false);
-        return true;
-      }
-      _setLoading(false);
-      return false;
-    } catch (e) {
-      _error = 'Failed to accept booking: $e';
-      debugPrint('Error accepting booking: $e');
-      _setLoading(false);
-      return false;
-    }
-  }
-
-  // Update booking status
-  Future<bool> updateBookingStatus(
-    String bookingId,
-    BookingStatus status,
-  ) async {
-    _setLoading(true);
-    _error = null;
-
-    try {
-      final booking = await _bookingRepository.getBookingById(bookingId);
-      if (booking != null) {
-        final updatedBooking = booking.copyWith(
-          status: status,
-          updatedAt: DateTime.now(),
-          deliveryDate: status == BookingStatus.completed
-              ? DateTime.now()
-              : null,
-        );
-        await _bookingRepository.updateBooking(updatedBooking);
-
-        // Update local list
-        final index = _userBookings.indexWhere((b) => b.bookingId == bookingId);
-        if (index != -1) {
-          _userBookings[index] = updatedBooking;
-        }
-
-        _setLoading(false);
-        return true;
-      }
-      _setLoading(false);
-      return false;
-    } catch (e) {
-      _error = 'Failed to update booking status: $e';
-      debugPrint('Error updating booking status: $e');
-      _setLoading(false);
-      return false;
-    }
-  }
-
-  // Add driver notes
-  Future<bool> addDriverNotes(String bookingId, String notes) async {
-    try {
-      final booking = await _bookingRepository.getBookingById(bookingId);
-      if (booking != null) {
-        final updatedBooking = booking.copyWith(
-          driverNotes: notes,
-          updatedAt: DateTime.now(),
-        );
-        await _bookingRepository.updateBooking(updatedBooking);
-
-        // Update local list
-        final index = _userBookings.indexWhere((b) => b.bookingId == bookingId);
-        if (index != -1) {
-          _userBookings[index] = updatedBooking;
-          notifyListeners();
-        }
-
-        return true;
-      }
-      return false;
-    } catch (e) {
-      _error = 'Failed to add driver notes: $e';
-      debugPrint('Error adding driver notes: $e');
-      return false;
-    }
-  }
-
-  // Rate a completed booking
-  Future<bool> rateBooking(
-    String bookingId,
-    double rating,
-    String? feedback,
-  ) async {
-    try {
-      final booking = await _bookingRepository.getBookingById(bookingId);
-      if (booking != null && booking.status == BookingStatus.completed) {
-        final updatedBooking = booking.copyWith(
-          rating: rating,
-          feedback: feedback,
-          updatedAt: DateTime.now(),
-        );
-        await _bookingRepository.updateBooking(updatedBooking);
-
-        // Update local list
-        final index = _userBookings.indexWhere((b) => b.bookingId == bookingId);
-        if (index != -1) {
-          _userBookings[index] = updatedBooking;
-          notifyListeners();
-        }
-
-        return true;
-      }
-      return false;
-    } catch (e) {
-      _error = 'Failed to rate booking: $e';
-      debugPrint('Error rating booking: $e');
-      return false;
-    }
-  }
-
-  // Set selected booking
-  void setSelectedBooking(Booking? booking) {
-    _selectedBooking = booking;
-    notifyListeners();
-  }
-
-  // Stream bookings for real-time updates
-  void streamUserBookings(String userId, {required bool isCargoOwner}) {
-    if (isCargoOwner) {
-      _bookingRepository
-          .bookingsStream(cargoOwnerId: userId)
-          .listen(
-            (bookings) {
-              _userBookings = bookings;
-              notifyListeners();
-            },
-            onError: (e) {
-              _error = 'Bookings stream error: $e';
-              debugPrint('Error in bookings stream: $e');
-              notifyListeners();
-            },
-          );
-    } else {
-      _bookingRepository
-          .bookingsStream(driverId: userId)
-          .listen(
-            (bookings) {
-              _userBookings = bookings;
-              notifyListeners();
-            },
-            onError: (e) {
-              _error = 'Bookings stream error: $e';
-              debugPrint('Error in bookings stream: $e');
-              notifyListeners();
-            },
-          );
-    }
-  }
-
-  // Clear bookings data
-  void clearBookings() {
-    _userBookings.clear();
-    _availableBookings.clear();
-    _selectedBooking = null;
-    _error = null;
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  // Statistics methods
-  int get totalBookings => _userBookings.length;
-  int get completedBookingsCount => completedBookings.length;
-  int get pendingBookingsCount => pendingBookings.length;
-
-  double get averageRating {
-    final ratedBookings = completedBookings.where((b) => b.rating != null);
-    if (ratedBookings.isEmpty) return 0.0;
-
-    final totalRating = ratedBookings.fold<double>(
-      0.0,
-      (sum, booking) => sum + (booking.rating ?? 0.0),
-    );
-    return totalRating / ratedBookings.length;
-  }
-
-  // Private helper methods
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();
+  }
+
+  void _setError(String? error) {
+    _error = error;
+    notifyListeners();
+  }
+
+  void clearError() {
+    _error = null;
+    notifyListeners();
+  }
+
+  // Create a new booking
+  Future<bool> createBooking({
+    required String cargoOwnerId,
+    required String pickupLocation,
+    required String dropoffLocation,
+    required String cargoDescription,
+    required VehicleType vehicleType,
+    double? weight,
+    String? specialInstructions,
+    double? estimatedPrice,
+  }) async {
+    try {
+      _setLoading(true);
+      _setError(null);
+
+      final booking = BookingModel(
+        id: '',
+        cargoOwnerId: cargoOwnerId,
+        pickupLocation: pickupLocation,
+        dropoffLocation: dropoffLocation,
+        cargoDescription: cargoDescription,
+        vehicleType: vehicleType,
+        weight: weight,
+        specialInstructions: specialInstructions,
+        status: BookingStatus.pending,
+        createdAt: DateTime.now(),
+        estimatedPrice: estimatedPrice,
+      );
+
+      final bookingId = await _bookingRepository.createBooking(booking);
+
+      _myBookings.insert(0, booking.copyWith(id: bookingId));
+
+      return true;
+    } catch (e) {
+      _setError('Failed to create booking: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Load bookings for cargo owner
+  Future<void> loadCargoOwnerBookings(String cargoOwnerId) async {
+    try {
+      _setLoading(true);
+      _setError(null);
+      _myBookings = await _bookingRepository.getBookingsByCargoOwner(cargoOwnerId);
+    } catch (e) {
+      _setError('Failed to load bookings: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Load bookings for driver
+  Future<void> loadDriverBookings(String driverId) async {
+    try {
+      _setLoading(true);
+      _setError(null);
+      _myBookings = await _bookingRepository.getBookingsByDriver(driverId);
+    } catch (e) {
+      _setError('Failed to load driver bookings: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Load available bookings for driver
+  Future<void> loadAvailableBookings(String driverId) async {
+    try {
+      _setLoading(true);
+      _setError(null);
+      _availableBookings = await _bookingRepository.getPendingBookingsForDriver(driverId);
+    } catch (e) {
+      _setError('Failed to load available bookings: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Accept a booking
+  Future<bool> acceptBooking(String bookingId, String driverId) async {
+    try {
+      _setLoading(true);
+      _setError(null);
+      await _bookingRepository.acceptBooking(bookingId, driverId);
+
+      final index = _availableBookings.indexWhere((b) => b.id == bookingId);
+      if (index != -1) {
+        final updated = _availableBookings[index].copyWith(
+          status: BookingStatus.accepted,
+          driverId: driverId,
+          acceptedAt: DateTime.now(),
+        );
+        _availableBookings.removeAt(index);
+        _myBookings.insert(0, updated);
+      }
+
+      return true;
+    } catch (e) {
+      _setError('Failed to accept booking: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Accept booking with chat
+  Future<bool> acceptBookingWithChat(String bookingId, String driverId, String driverName) async {
+    try {
+      _setLoading(true);
+      _setError(null);
+      await _bookingRepository.acceptBooking(bookingId, driverId);
+
+      final index = _availableBookings.indexWhere((b) => b.id == bookingId);
+      if (index != -1) {
+        final updated = _availableBookings[index].copyWith(
+          status: BookingStatus.accepted,
+          driverId: driverId,
+          acceptedAt: DateTime.now(),
+        );
+        _availableBookings.removeAt(index);
+        _myBookings.insert(0, updated);
+      }
+
+      return true;
+    } catch (e) {
+      _setError('Failed to accept booking with chat: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Decline booking
+  Future<bool> declineBooking(String bookingId, String driverId) async {
+    try {
+      _setLoading(true);
+      _setError(null);
+      await _bookingRepository.declineBooking(bookingId, driverId);
+      _availableBookings.removeWhere((b) => b.id == bookingId);
+      return true;
+    } catch (e) {
+      _setError('Failed to decline booking: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Complete a booking
+  Future<bool> completeBooking(String bookingId) async {
+    try {
+      _setLoading(true);
+      _setError(null);
+      await _bookingRepository.completeBooking(bookingId);
+
+      final index = _myBookings.indexWhere((b) => b.id == bookingId);
+      if (index != -1) {
+        _myBookings[index] = _myBookings[index].copyWith(
+          status: BookingStatus.completed,
+          completedAt: DateTime.now(),
+        );
+      }
+
+      return true;
+    } catch (e) {
+      _setError('Failed to complete booking: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Cancel a booking
+  Future<bool> cancelBooking(String bookingId) async {
+    try {
+      _setLoading(true);
+      _setError(null);
+      await _bookingRepository.cancelBooking(bookingId);
+
+      final index = _myBookings.indexWhere((b) => b.id == bookingId);
+      if (index != -1) {
+        _myBookings[index] = _myBookings[index].copyWith(
+          status: BookingStatus.cancelled,
+        );
+      }
+
+      return true;
+    } catch (e) {
+      _setError('Failed to cancel booking: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Reassign booking
+  Future<bool> reassignBooking(String bookingId) async {
+    try {
+      _setLoading(true);
+      _setError(null);
+
+      final booking = await _bookingRepository.getBookingById(bookingId);
+      if (booking != null) {
+        final updatedBooking = booking.copyWith(
+          status: BookingStatus.pending,
+          driverId: null,
+        );
+
+        await _bookingRepository.updateBooking(updatedBooking);
+
+        final index = _myBookings.indexWhere((b) => b.id == bookingId);
+        if (index != -1) {
+          _myBookings[index] = updatedBooking;
+        }
+      }
+
+      return true;
+    } catch (e) {
+      _setError('Failed to reassign booking: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Get declined bookings
+  Future<List<BookingModel>> getDeclinedBookings(String cargoOwnerId) async {
+    try {
+      final bookings = await _bookingRepository.getBookingsByCargoOwner(cargoOwnerId);
+      return bookings.where((b) => b.status == BookingStatus.declined).toList();
+    } catch (e) {
+      throw Exception('Failed to get declined bookings: $e');
+    }
+  }
+
+  // Stream: cargo owner bookings
+  Stream<List<BookingModel>> streamCargoOwnerBookings(String cargoOwnerId) {
+    return _bookingRepository.getBookingsStreamByCargoOwner(cargoOwnerId);
+  }
+
+  // Stream: driver bookings
+  Stream<List<BookingModel>> streamDriverBookings(String driverId) {
+    return _bookingRepository.getBookingsStreamByDriver(driverId);
+  }
+
+  // Stream: available bookings for driver
+  Stream<List<BookingModel>> streamAvailableBookings(String driverId) {
+    return _bookingRepository.getPendingBookingsStreamForDriver(driverId);
   }
 }

@@ -1,166 +1,179 @@
-import '../enums/app_enums.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class GeoLocation {
-  final double latitude;
-  final double longitude;
-  final String address;
-
-  GeoLocation({
-    required this.latitude,
-    required this.longitude,
-    required this.address,
-  });
-
-  factory GeoLocation.fromMap(Map<String, dynamic> map) {
-    return GeoLocation(
-      latitude: (map['latitude'] ?? 0).toDouble(),
-      longitude: (map['longitude'] ?? 0).toDouble(),
-      address: map['address'] ?? '',
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {'latitude': latitude, 'longitude': longitude, 'address': address};
-  }
+enum BookingStatus {
+  pending,
+  accepted,
+  declined,
+  inProgress,
+  completed,
+  cancelled
 }
 
-class Booking {
-  final String bookingId;
+enum VehicleType {
+  miniTruck,
+  pickup,
+  largeTruck,
+  van,
+  motorcycle
+}
+
+class BookingModel {
+  final String id;
   final String cargoOwnerId;
   final String? driverId;
+  final String pickupLocation;
+  final String dropoffLocation;
   final String cargoDescription;
-  final double weight;
-  final String dimensions;
-  final GeoLocation pickupLocation;
-  final GeoLocation deliveryLocation;
-  final DateTime pickupDate;
-  final DateTime? deliveryDate;
-  final double price;
-  final BookingStatus status;
+  final VehicleType vehicleType;
+  final double? weight;
   final String? specialInstructions;
-  final List<String> cargoPhotos;
+  final BookingStatus status;
   final DateTime createdAt;
-  final DateTime updatedAt;
-  final String? driverNotes;
-  final double? rating;
-  final String? feedback;
+  final DateTime? acceptedAt;
+  final DateTime? completedAt;
+  final double? estimatedPrice;
+  final double? finalPrice;
+  final String? notes;
 
-  Booking({
-    required this.bookingId,
+  const BookingModel({
+    required this.id,
     required this.cargoOwnerId,
     this.driverId,
-    required this.cargoDescription,
-    required this.weight,
-    required this.dimensions,
     required this.pickupLocation,
-    required this.deliveryLocation,
-    required this.pickupDate,
-    this.deliveryDate,
-    required this.price,
-    required this.status,
+    required this.dropoffLocation,
+    required this.cargoDescription,
+    required this.vehicleType,
+    this.weight,
     this.specialInstructions,
-    this.cargoPhotos = const [],
+    required this.status,
     required this.createdAt,
-    required this.updatedAt,
-    this.driverNotes,
-    this.rating,
-    this.feedback,
+    this.acceptedAt,
+    this.completedAt,
+    this.estimatedPrice,
+    this.finalPrice,
+    this.notes,
   });
 
-  factory Booking.fromMap(Map<String, dynamic> map) {
-    return Booking(
-      bookingId: map['bookingId'] ?? '',
-      cargoOwnerId: map['cargoOwnerId'] ?? '',
-      driverId: map['driverId'],
-      cargoDescription: map['cargoDescription'] ?? '',
-      weight: (map['weight'] ?? 0).toDouble(),
-      dimensions: map['dimensions'] ?? '',
-      pickupLocation: GeoLocation.fromMap(map['pickupLocation'] ?? {}),
-      deliveryLocation: GeoLocation.fromMap(map['deliveryLocation'] ?? {}),
-      pickupDate: DateTime.fromMillisecondsSinceEpoch(map['pickupDate']),
-      deliveryDate: map['deliveryDate'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['deliveryDate'])
-          : null,
-      price: (map['price'] ?? 0).toDouble(),
+  factory BookingModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    return BookingModel(
+      id: doc.id,
+      cargoOwnerId: data['cargoOwnerId'] ?? '',
+      driverId: data['driverId'],
+      pickupLocation: data['pickupLocation'] ?? '',
+      dropoffLocation: data['dropoffLocation'] ?? '',
+      cargoDescription: data['cargoDescription'] ?? '',
+      vehicleType: VehicleType.values.firstWhere(
+            (e) => e.toString().split('.').last == data['vehicleType'],
+        orElse: () => VehicleType.miniTruck,
+      ),
+      weight: data['weight']?.toDouble(),
+      specialInstructions: data['specialInstructions'],
       status: BookingStatus.values.firstWhere(
-        (e) => e.toString() == 'BookingStatus.${map['status']}',
+            (e) => e.toString().split('.').last == data['status'],
         orElse: () => BookingStatus.pending,
       ),
-      specialInstructions: map['specialInstructions'],
-      cargoPhotos: List<String>.from(map['cargoPhotos'] ?? []),
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt']),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt']),
-      driverNotes: map['driverNotes'],
-      rating: map['rating']?.toDouble(),
-      feedback: map['feedback'],
+      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      acceptedAt: data['acceptedAt'] != null
+          ? (data['acceptedAt'] as Timestamp).toDate()
+          : null,
+      completedAt: data['completedAt'] != null
+          ? (data['completedAt'] as Timestamp).toDate()
+          : null,
+      estimatedPrice: data['estimatedPrice']?.toDouble(),
+      finalPrice: data['finalPrice']?.toDouble(),
+      notes: data['notes'],
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toFirestore() {
     return {
-      'bookingId': bookingId,
       'cargoOwnerId': cargoOwnerId,
       'driverId': driverId,
+      'pickupLocation': pickupLocation,
+      'dropoffLocation': dropoffLocation,
       'cargoDescription': cargoDescription,
+      'vehicleType': vehicleType.toString().split('.').last,
       'weight': weight,
-      'dimensions': dimensions,
-      'pickupLocation': pickupLocation.toMap(),
-      'deliveryLocation': deliveryLocation.toMap(),
-      'pickupDate': pickupDate.millisecondsSinceEpoch,
-      'deliveryDate': deliveryDate?.millisecondsSinceEpoch,
-      'price': price,
-      'status': status.toString().split('.').last,
       'specialInstructions': specialInstructions,
-      'cargoPhotos': cargoPhotos,
-      'createdAt': createdAt.millisecondsSinceEpoch,
-      'updatedAt': updatedAt.millisecondsSinceEpoch,
-      'driverNotes': driverNotes,
-      'rating': rating,
-      'feedback': feedback,
+      'status': status.toString().split('.').last,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'acceptedAt': acceptedAt != null ? Timestamp.fromDate(acceptedAt!) : null,
+      'completedAt': completedAt != null ? Timestamp.fromDate(completedAt!) : null,
+      'estimatedPrice': estimatedPrice,
+      'finalPrice': finalPrice,
+      'notes': notes,
     };
   }
 
-  Booking copyWith({
-    String? bookingId,
+  BookingModel copyWith({
+    String? id,
     String? cargoOwnerId,
     String? driverId,
+    String? pickupLocation,
+    String? dropoffLocation,
     String? cargoDescription,
+    VehicleType? vehicleType,
     double? weight,
-    String? dimensions,
-    GeoLocation? pickupLocation,
-    GeoLocation? deliveryLocation,
-    DateTime? pickupDate,
-    DateTime? deliveryDate,
-    double? price,
-    BookingStatus? status,
     String? specialInstructions,
-    List<String>? cargoPhotos,
+    BookingStatus? status,
     DateTime? createdAt,
-    DateTime? updatedAt,
-    String? driverNotes,
-    double? rating,
-    String? feedback,
+    DateTime? acceptedAt,
+    DateTime? completedAt,
+    double? estimatedPrice,
+    double? finalPrice,
+    String? notes,
   }) {
-    return Booking(
-      bookingId: bookingId ?? this.bookingId,
+    return BookingModel(
+      id: id ?? this.id,
       cargoOwnerId: cargoOwnerId ?? this.cargoOwnerId,
       driverId: driverId ?? this.driverId,
-      cargoDescription: cargoDescription ?? this.cargoDescription,
-      weight: weight ?? this.weight,
-      dimensions: dimensions ?? this.dimensions,
       pickupLocation: pickupLocation ?? this.pickupLocation,
-      deliveryLocation: deliveryLocation ?? this.deliveryLocation,
-      pickupDate: pickupDate ?? this.pickupDate,
-      deliveryDate: deliveryDate ?? this.deliveryDate,
-      price: price ?? this.price,
-      status: status ?? this.status,
+      dropoffLocation: dropoffLocation ?? this.dropoffLocation,
+      cargoDescription: cargoDescription ?? this.cargoDescription,
+      vehicleType: vehicleType ?? this.vehicleType,
+      weight: weight ?? this.weight,
       specialInstructions: specialInstructions ?? this.specialInstructions,
-      cargoPhotos: cargoPhotos ?? this.cargoPhotos,
+      status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      driverNotes: driverNotes ?? this.driverNotes,
-      rating: rating ?? this.rating,
-      feedback: feedback ?? this.feedback,
+      acceptedAt: acceptedAt ?? this.acceptedAt,
+      completedAt: completedAt ?? this.completedAt,
+      estimatedPrice: estimatedPrice ?? this.estimatedPrice,
+      finalPrice: finalPrice ?? this.finalPrice,
+      notes: notes ?? this.notes,
     );
+  }
+
+  String get vehicleTypeDisplayName {
+    switch (vehicleType) {
+      case VehicleType.miniTruck:
+        return 'Mini Truck';
+      case VehicleType.pickup:
+        return 'Pickup';
+      case VehicleType.largeTruck:
+        return 'Large Truck';
+      case VehicleType.van:
+        return 'Van';
+      case VehicleType.motorcycle:
+        return 'Motorcycle';
+    }
+  }
+
+  String get statusDisplayName {
+    switch (status) {
+      case BookingStatus.pending:
+        return 'Pending';
+      case BookingStatus.accepted:
+        return 'Accepted';
+      case BookingStatus.declined:
+        return 'Declined';
+      case BookingStatus.inProgress:
+        return 'In Progress';
+      case BookingStatus.completed:
+        return 'Completed';
+      case BookingStatus.cancelled:
+        return 'Cancelled';
+    }
   }
 }

@@ -1,3 +1,5 @@
+import 'package:cargo_app/core/repositories/chat_repository.dart';
+import 'package:cargo_app/features/chat/chat_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'widgets/firebase_initializer.dart';
@@ -16,6 +18,7 @@ import 'features/profile/providers/profile_provider.dart';
 import 'features/booking/providers/booking_provider.dart';
 import 'core/repositories/user_repository.dart';
 import 'core/repositories/booking_repository.dart';
+import 'package:cargo_app/constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,19 +41,31 @@ class MyApp extends StatelessWidget {
           ProxyProvider0<BookingRepository>(
             update: (_, __) => FirebaseBookingRepository(),
           ),
+          // Add ChatRepository provider
+          ProxyProvider0<ChatRepository>(
+            update: (_, __) => FirebaseChatRepository(),
+          ),
           ChangeNotifierProxyProvider<UserRepository, ProfileProvider>(
             create: (context) => ProfileProvider(
               Provider.of<UserRepository>(context, listen: false),
             ),
             update: (context, userRepo, previous) =>
-                previous ?? ProfileProvider(userRepo),
+            previous ?? ProfileProvider(userRepo),
           ),
           ChangeNotifierProxyProvider<BookingRepository, BookingProvider>(
             create: (context) => BookingProvider(
               Provider.of<BookingRepository>(context, listen: false),
             ),
             update: (context, bookingRepo, previous) =>
-                previous ?? BookingProvider(bookingRepo),
+            previous ?? BookingProvider(bookingRepo),
+          ),
+          // ChatProvider depends on ChatRepository
+          ChangeNotifierProxyProvider<ChatRepository, ChatProvider>(
+            create: (context) => ChatProvider(
+              Provider.of<ChatRepository>(context, listen: false),
+            ),
+            update: (context, chatRepo, previous) =>
+            previous ?? ChatProvider(chatRepo),
           ),
         ],
         child: Consumer<AuthProvider>(
@@ -64,9 +79,9 @@ class MyApp extends StatelessWidget {
               title: 'CargoLink',
               debugShowCheckedModeBanner: false,
               theme: ThemeData(
-                fontFamily: 'Roboto',
+                fontFamily: 'Lexend',
                 useMaterial3: true,
-                colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+                colorScheme: ColorScheme.fromSeed(seedColor: primaryGreen),
               ),
               initialRoute: '/splash',
               routes: {
@@ -76,9 +91,9 @@ class MyApp extends StatelessWidget {
                 '/signup': (context) => SignupScreen(),
                 '/forgot-password': (context) => const ForgetPasswordScreen(),
                 '/password-reset-confirmation': (context) =>
-                    const PasswordResetConfirmation(),
+                const PasswordResetConfirmation(),
                 '/email-verification': (context) =>
-                    const EmailVerificationScreen(),
+                const EmailVerificationScreen(),
                 '/home': (context) => const Home(),
                 '/personal-data': (context) => const PersonalDataScreen(),
               },
