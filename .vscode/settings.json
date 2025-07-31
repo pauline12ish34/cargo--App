@@ -1,3 +1,8 @@
 {
-    "cmake.sourceDirectory": "C:/Users/user/Documents/flutter/cargo_app/linux"
+    "cmake.sourceDirectory": "C:/Users/user/Documents/flutter/cargo_app/linux",
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#0D323A",
+        "titleBar.activeBackground": "#124652",
+        "titleBar.activeForeground": "#F6FCFD"
+    }
 }
