@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/user_model.dart';
+import '../core/models/user_model.dart';
+import '../core/enums/app_enums.dart';
 import '../services/auth_service.dart';
 
 class AuthProvider with ChangeNotifier {

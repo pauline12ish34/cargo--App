@@ -13,20 +13,31 @@ class UserModel {
   final DateTime updatedAt;
 
   // Driver-specific fields
-  final String? driverLicense;
-  final String? nationalId;
-  final String? vehicleRegistration;
-  final String? vehicleType;
-  final String? vehicleCapacity;
-  final String? vehicleImageUrl;
-  final bool? isAvailable;
-  final double? rating;
-  final int? completedJobs;
+  final String? driverLicense;          // Document URL - uploaded driver license file
+  final String? driverLicenseNumber;    // License number text - user input (e.g., "DL123456789")
+  final String? plateNumber;            // Vehicle plate number
+  final String? insurance;              // Insurance document URL
+  final String? nationalId;             // National ID document URL
+
+  final String? vehicleRegistration;    // Vehicle registration document URL
+  final String? vehicleType;            // Vehicle type (e.g., "Pickup Truck")
+  final String? vehicleCapacity;        // Vehicle capacity (e.g., "1 ton")
+  final String? vehicleImageUrl;        // Vehicle photo URL
+  final bool? isAvailable;              // Driver availability status
+  final double? rating;                 // Average rating
+  final int? completedJobs;             // Number of completed jobs
 
   // Cargo Owner specific fields
   final String? companyName;
-  final String? businessLicense;
+  final String? businessLicense;        // Business license document URL
   final String? companyType;
+
+  // Address fields
+  final String? street;
+  final String? city;
+  final String? state;
+  final String? postalCode;
+  final String? country;
 
   UserModel({
     required this.uid,
@@ -39,6 +50,7 @@ class UserModel {
     required this.createdAt,
     required this.updatedAt,
     this.driverLicense,
+    this.driverLicenseNumber,
     this.nationalId,
     this.vehicleRegistration,
     this.vehicleType,
@@ -47,9 +59,16 @@ class UserModel {
     this.isAvailable,
     this.rating,
     this.completedJobs,
+    this.plateNumber,
+    this.insurance,
     this.companyName,
     this.businessLicense,
     this.companyType,
+    this.street,
+    this.city,
+    this.state,
+    this.postalCode,
+    this.country,
   });
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
@@ -69,6 +88,7 @@ class UserModel {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       driverLicense: data['driverLicense'],
+      driverLicenseNumber: data['driverLicenseNumber'],
       nationalId: data['nationalId'],
       vehicleRegistration: data['vehicleRegistration'],
       vehicleType: data['vehicleType'],
@@ -77,9 +97,16 @@ class UserModel {
       isAvailable: data['isAvailable'],
       rating: data['rating']?.toDouble(),
       completedJobs: data['completedJobs'],
+      plateNumber: data['plateNumber'],
+      insurance: data['insurance'],
       companyName: data['companyName'],
       businessLicense: data['businessLicense'],
       companyType: data['companyType'],
+      street: data['street'],
+      city: data['city'],
+      state: data['state'],
+      postalCode: data['postalCode'],
+      country: data['country'],
     );
   }
 
@@ -93,7 +120,10 @@ class UserModel {
       'profileImageUrl': profileImageUrl,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      if (plateNumber != null) 'plateNumber': plateNumber,
+      if (insurance != null) 'insurance': insurance,
       if (driverLicense != null) 'driverLicense': driverLicense,
+      if (driverLicenseNumber != null) 'driverLicenseNumber': driverLicenseNumber,
       if (nationalId != null) 'nationalId': nationalId,
       if (vehicleRegistration != null) 'vehicleRegistration': vehicleRegistration,
       if (vehicleType != null) 'vehicleType': vehicleType,
@@ -105,6 +135,11 @@ class UserModel {
       if (companyName != null) 'companyName': companyName,
       if (businessLicense != null) 'businessLicense': businessLicense,
       if (companyType != null) 'companyType': companyType,
+      if (street != null) 'street': street,
+      if (city != null) 'city': city,
+      if (state != null) 'state': state,
+      if (postalCode != null) 'postalCode': postalCode,
+      if (country != null) 'country': country,
     };
   }
 
@@ -117,6 +152,7 @@ class UserModel {
     String? profileImageUrl,
     DateTime? updatedAt,
     String? driverLicense,
+    String? driverLicenseNumber,
     String? nationalId,
     String? vehicleRegistration,
     String? vehicleType,
@@ -125,9 +161,16 @@ class UserModel {
     bool? isAvailable,
     double? rating,
     int? completedJobs,
+    String? plateNumber,
+    String? insurance,
     String? companyName,
     String? businessLicense,
     String? companyType,
+    String? street,
+    String? city,
+    String? state,
+    String? postalCode,
+    String? country,
   }) {
     return UserModel(
       uid: uid,
@@ -140,6 +183,7 @@ class UserModel {
       createdAt: createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
       driverLicense: driverLicense ?? this.driverLicense,
+      driverLicenseNumber: driverLicenseNumber ?? this.driverLicenseNumber,
       nationalId: nationalId ?? this.nationalId,
       vehicleRegistration: vehicleRegistration ?? this.vehicleRegistration,
       vehicleType: vehicleType ?? this.vehicleType,
@@ -148,9 +192,16 @@ class UserModel {
       isAvailable: isAvailable ?? this.isAvailable,
       rating: rating ?? this.rating,
       completedJobs: completedJobs ?? this.completedJobs,
+      plateNumber: plateNumber ?? this.plateNumber,
+      insurance: insurance ?? this.insurance,
       companyName: companyName ?? this.companyName,
       businessLicense: businessLicense ?? this.businessLicense,
       companyType: companyType ?? this.companyType,
+      street: street ?? this.street,
+      city: city ?? this.city,
+      state: state ?? this.state,
+      postalCode: postalCode ?? this.postalCode,
+      country: country ?? this.country,
     );
   }
 
@@ -172,6 +223,28 @@ class UserModel {
   // Mock total earnings (you might want to track this properly later)
   int get totalEarnings => (completedJobs ?? 0) * 5000; // Mock calculation
   
-  // Mock address (you might want to add proper address support later)
-  Map<String, String>? get address => null;
+  // Address getter that returns actual address information
+  Map<String, String>? get address {
+    if (street != null || city != null || state != null || postalCode != null || country != null) {
+      return {
+        if (street != null) 'street': street!,
+        if (city != null) 'city': city!,
+        if (state != null) 'state': state!,
+        if (postalCode != null) 'postalCode': postalCode!,
+        if (country != null) 'country': country!,
+      };
+    }
+    return null;
+  }
+  
+  // Full address as a formatted string
+  String get fullAddress {
+    final parts = <String>[];
+    if (street?.isNotEmpty == true) parts.add(street!);
+    if (city?.isNotEmpty == true) parts.add(city!);
+    if (state?.isNotEmpty == true) parts.add(state!);
+    if (postalCode?.isNotEmpty == true) parts.add(postalCode!);
+    if (country?.isNotEmpty == true) parts.add(country!);
+    return parts.join(', ');
+  }
 }

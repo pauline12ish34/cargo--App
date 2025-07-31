@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/user_model.dart';
+import '../core/models/user_model.dart';
+import '../core/enums/app_enums.dart';
 import '../utils/firebase_auth_helper.dart';
 
 class AuthService {

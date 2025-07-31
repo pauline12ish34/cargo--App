@@ -12,6 +12,10 @@ import '../../../widgets/app_top_bar.dart';
 import '../../../mixins/image_picker_mixin.dart';
 import '../../../mixins/logout_mixin.dart';
 import '../../../constants.dart';
+import '../../../screens/driver_profile_edit_screen.dart';
+import '../../../screens/vehicle_details_screen.dart';
+import '../../../screens/settings_screen.dart';
+import '../../../screens/help_support_screen.dart';
 
 class DriverHome extends StatefulWidget {
   const DriverHome({super.key});
@@ -410,8 +414,10 @@ class _DriverProfileTabState extends State<_DriverProfileTab>
             icon: Icons.edit,
             title: 'Edit Profile',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Edit Profile - Coming Soon!')),
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const DriverProfileEditScreen(),
+                ),
               );
             },
           ),
@@ -420,8 +426,10 @@ class _DriverProfileTabState extends State<_DriverProfileTab>
             title: 'Driver License',
             subtitle: user.driverLicense ?? 'Add license details',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Driver License - Coming Soon!')),
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const DriverProfileEditScreen(),
+                ),
               );
             },
           ),
@@ -432,20 +440,24 @@ class _DriverProfileTabState extends State<_DriverProfileTab>
                 ? '${user.primaryVehicle!['type']} - ${user.primaryVehicle!['capacity']}'
                 : 'Add vehicle details',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Vehicle Details - Coming Soon!')),
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const VehicleDetailsScreen(),
+                ),
               );
             },
           ),
           _ProfileOption(
             icon: Icons.location_on,
             title: 'Address',
-            subtitle: user.address != null
-                ? 'Address on file'
+            subtitle: user.fullAddress.isNotEmpty
+                ? user.fullAddress
                 : 'Add your address',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Address - Coming Soon!')),
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const DriverProfileEditScreen(),
+                ),
               );
             },
           ),
@@ -453,8 +465,10 @@ class _DriverProfileTabState extends State<_DriverProfileTab>
             icon: Icons.settings,
             title: 'Settings',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Settings - Coming Soon!')),
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
               );
             },
           ),
@@ -462,8 +476,10 @@ class _DriverProfileTabState extends State<_DriverProfileTab>
             icon: Icons.help,
             title: 'Help & Support',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Help & Support - Coming Soon!')),
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const HelpSupportScreen(),
+                ),
               );
             },
           ),

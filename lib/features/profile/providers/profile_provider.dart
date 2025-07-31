@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../../core/models/user_model.dart';
-import '../../../core/repositories/user_repository.dart';
 import '../../../core/enums/app_enums.dart';
+import '../../../core/repositories/user_repository.dart';
 
 class ProfileProvider extends ChangeNotifier {
   final UserRepository _userRepository;
