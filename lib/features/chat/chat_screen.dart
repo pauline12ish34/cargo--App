@@ -23,6 +23,8 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  bool _isInitialized = false;
+  bool _shouldScrollToBottom = false;
 
   @override
   void initState() {
@@ -33,12 +35,15 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _initializeChat() {
+    if (_isInitialized) return; // Prevent multiple initializations
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final chatProvider = Provider.of<ChatProvider>(context, listen: false);
 
     if (authProvider.user != null) {
       chatProvider.loadMessages(widget.booking.id);
       chatProvider.markMessagesAsRead(widget.booking.id, authProvider.user!.uid);
+      _isInitialized = true;
     }
   }
 
@@ -65,204 +70,217 @@ class _ChatScreenState extends State<ChatScreen> {
 
       if (success) {
         _messageController.clear();
-        _scrollToBottom();
+        _shouldScrollToBottom = true; // Set flag instead of immediate scroll
       }
     }
   }
 
   void _scrollToBottom() {
+    if (!_shouldScrollToBottom) return; // Only scroll when needed
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
+      if (_scrollController.hasClients && mounted) { // Check if widget is still mounted
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
+        _shouldScrollToBottom = false; // Reset flag
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(widget.otherUserName),
-            Text(
-              widget.booking.cargoDescription,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+    return WillPopScope( // Add this to control back button behavior
+      onWillPop: () async {
+        // Clean up any ongoing operations before popping
+        final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+        // Add any cleanup logic here if needed
+        return true; // Allow pop
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(widget.otherUserName),
+              Text(
+                widget.booking.cargoDescription,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+              ),
+            ],
+          ),
+          backgroundColor: primaryGreen,
+          foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.info_outline),
+              onPressed: () {
+                _showJobDetails();
+              },
             ),
           ],
         ),
-        backgroundColor: primaryGreen,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () {
-              _showJobDetails();
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Job Status Banner
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            color: _getStatusColor().withOpacity(0.1),
-            child: Row(
-              children: [
-                Icon(
-                  _getStatusIcon(),
-                  size: 16,
-                  color: _getStatusColor(),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Job Status: ${widget.booking.statusDisplayName}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+        body: Column(
+          children: [
+            // Job Status Banner
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              color: _getStatusColor().withOpacity(0.1),
+              child: Row(
+                children: [
+                  Icon(
+                    _getStatusIcon(),
+                    size: 16,
                     color: _getStatusColor(),
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          // Messages List
-          Expanded(
-            child: Consumer<ChatProvider>(
-              builder: (context, chatProvider, child) {
-                return StreamBuilder<List<ChatMessage>>(
-                  stream: chatProvider.streamMessages(widget.booking.id),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    if (snapshot.hasError) {
-                      return Center(
-                        child: Text('Error: ${snapshot.error}'),
-                      );
-                    }
-
-                    final messages = snapshot.data ?? [];
-
-                    if (messages.isEmpty) {
-                      return const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.chat_outlined,
-                              size: 64,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              'No messages yet',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Start the conversation!',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    // Auto-scroll to bottom when new messages arrive
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _scrollToBottom();
-                    });
-
-                    return ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(16),
-                      itemCount: messages.length,
-                      itemBuilder: (context, index) {
-                        final message = messages[index];
-                        return _MessageBubble(
-                          message: message,
-                          isMe: message.senderId == Provider.of<AuthProvider>(context, listen: false).user?.uid,
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-
-          // Message Input
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  offset: const Offset(0, -2),
-                  blurRadius: 4,
-                  color: Colors.black.withOpacity(0.1),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Job Status: ${widget.booking.statusDisplayName}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: _getStatusColor(),
                     ),
-                    maxLines: null,
-                    textCapitalization: TextCapitalization.sentences,
-                    onSubmitted: (_) => _sendMessage(),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Consumer<ChatProvider>(
-                  builder: (context, chatProvider, child) {
-                    return CircleAvatar(
-                      backgroundColor: primaryGreen,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.send,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                        onPressed: chatProvider.isLoading ? null : _sendMessage,
-                      ),
-                    );
-                  },
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+
+            // Messages List
+            Expanded(
+              child: Consumer<ChatProvider>(
+                builder: (context, chatProvider, child) {
+                  return StreamBuilder<List<ChatMessage>>(
+                    stream: chatProvider.streamMessages(widget.booking.id),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting && !_isInitialized) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Text('Error: ${snapshot.error}'),
+                        );
+                      }
+
+                      final messages = snapshot.data ?? [];
+
+                      if (messages.isEmpty) {
+                        return const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.chat_outlined,
+                                size: 64,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'No messages yet',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Start the conversation!',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      // Only auto-scroll when flag is set
+                      if (_shouldScrollToBottom) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _scrollToBottom();
+                        });
+                      }
+
+                      return ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.all(16),
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          final message = messages[index];
+                          return _MessageBubble(
+                            message: message,
+                            isMe: message.senderId == Provider.of<AuthProvider>(context, listen: false).user?.uid,
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+
+            // Message Input
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    offset: const Offset(0, -2),
+                    blurRadius: 4,
+                    color: Colors.black.withOpacity(0.1),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        hintText: 'Type a message...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                      maxLines: null,
+                      textCapitalization: TextCapitalization.sentences,
+                      onSubmitted: (_) => _sendMessage(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Consumer<ChatProvider>(
+                    builder: (context, chatProvider, child) {
+                      return CircleAvatar(
+                        backgroundColor: primaryGreen,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.send,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          onPressed: chatProvider.isLoading ? null : _sendMessage,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -301,6 +319,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void _showJobDetails() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true, // Add this for better modal behavior
       builder: (context) => Container(
         padding: const EdgeInsets.all(24),
         child: Column(
