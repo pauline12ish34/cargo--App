@@ -72,21 +72,46 @@ class _DriverProfileEditScreenState extends State<DriverProfileEditScreen> with 
     final currentUser = authProvider.user;
     
     if (currentUser != null) {
-      setState(() {
-        _user = currentUser;
-        _nameController.text = currentUser.name;
-        _phoneController.text = currentUser.phoneNumber;
-        _driverLicenseNumberController.text = currentUser.driverLicenseNumber ?? '';
-        _vehicleTypeController.text = currentUser.vehicleType ?? '';
-        _vehicleCapacityController.text = currentUser.vehicleCapacity ?? '';
+      try {
+        // Fetch the latest user data from the database to ensure we have all fields
+        final latestUser = await _userRepository.getUserById(currentUser.uid);
+        final userToUse = latestUser ?? currentUser;
         
-        // Load address fields
-        _streetController.text = currentUser.street ?? '';
-        _cityController.text = currentUser.city ?? '';
-        _stateController.text = currentUser.state ?? '';
-        _postalCodeController.text = currentUser.postalCode ?? '';
-        _countryController.text = currentUser.country ?? '';
-      });
+        setState(() {
+          _user = userToUse;
+          _nameController.text = userToUse.name;
+          _phoneController.text = userToUse.phoneNumber;
+          // Handle migration: check both fields for license number
+          _driverLicenseNumberController.text = userToUse.driverLicenseNumber ?? userToUse.driverLicense ?? '';
+          _vehicleTypeController.text = userToUse.vehicleType ?? '';
+          _vehicleCapacityController.text = userToUse.vehicleCapacity ?? '';
+          
+          // Load address fields
+          _streetController.text = userToUse.street ?? '';
+          _cityController.text = userToUse.city ?? '';
+          _stateController.text = userToUse.state ?? '';
+          _postalCodeController.text = userToUse.postalCode ?? '';
+          _countryController.text = userToUse.country ?? '';
+        });
+      } catch (e) {
+        // Fallback to cached user data if database fetch fails
+        setState(() {
+          _user = currentUser;
+          _nameController.text = currentUser.name;
+          _phoneController.text = currentUser.phoneNumber;
+          // Handle migration: check both fields for license number
+          _driverLicenseNumberController.text = currentUser.driverLicenseNumber ?? currentUser.driverLicense ?? '';
+          _vehicleTypeController.text = currentUser.vehicleType ?? '';
+          _vehicleCapacityController.text = currentUser.vehicleCapacity ?? '';
+          
+          // Load address fields
+          _streetController.text = currentUser.street ?? '';
+          _cityController.text = currentUser.city ?? '';
+          _stateController.text = currentUser.state ?? '';
+          _postalCodeController.text = currentUser.postalCode ?? '';
+          _countryController.text = currentUser.country ?? '';
+        });
+      }
     }
   }
 
@@ -171,6 +196,11 @@ class _DriverProfileEditScreenState extends State<DriverProfileEditScreen> with 
         state: _stateController.text.trim(),
         postalCode: _postalCodeController.text.trim(),
         country: _countryController.text.trim(),
+        
+        // Migration: Clear old driverLicense field if it contains text (not a URL)
+        driverLicense: (currentUser.driverLicense != null && 
+                       !currentUser.driverLicense!.startsWith('http')) 
+                       ? null : currentUser.driverLicense,
         
         updatedAt: DateTime.now(),
       );

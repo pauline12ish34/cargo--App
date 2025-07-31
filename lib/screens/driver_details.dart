@@ -86,7 +86,7 @@ void initState() {
     if (success && mounted) {
       // Then update with driver-specific information
       final updateSuccess = await authProvider.updateDriverDocuments(
-        driverLicense: driverLicenseController.text.trim(),
+        driverLicenseNumber: driverLicenseController.text.trim(),
         nationalId: nationalIdController.text.trim(),
         vehicleRegistration: vehicleRegistrationController.text.trim(),
         vehicleType: vehicleTypeController.text.trim(),

@@ -237,7 +237,7 @@ class AuthProvider with ChangeNotifier {
 
   // Update driver documents
   Future<bool> updateDriverDocuments({
-  required String driverLicense,
+  required String driverLicenseNumber,
   required String nationalId,
   required String vehicleRegistration,
   required String vehicleType,
@@ -259,7 +259,7 @@ class AuthProvider with ChangeNotifier {
         .collection('users')
         .doc(_user!.uid)
         .update({
-      'driverLicense': driverLicense,
+      'driverLicenseNumber': driverLicenseNumber,
       'nationalId': nationalId,
       'vehicleRegistration': vehicleRegistration,
       'vehicleType': vehicleType,
