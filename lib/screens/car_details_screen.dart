@@ -1,6 +1,5 @@
 import 'package:cargo_app/widgets/payment.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 class RideDetailsPage extends StatelessWidget {
   const RideDetailsPage({super.key});

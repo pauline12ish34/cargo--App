@@ -15,7 +15,10 @@ class UserModel {
 
   // Driver-specific fields
   final String? driverLicense;
+  final String? plateNumber;
+  final String? insurance;
   final String? nationalId;
+
   final String? vehicleRegistration;
   final String? vehicleType;
   final String? vehicleCapacity;
@@ -43,6 +46,8 @@ class UserModel {
     this.isAvailable,
     this.rating,
     this.completedJobs,
+    this.plateNumber,
+    this.insurance,
   });
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
@@ -70,6 +75,8 @@ class UserModel {
       isAvailable: data['isAvailable'],
       rating: data['rating']?.toDouble(),
       completedJobs: data['completedJobs'],
+      plateNumber: data['plateNumber'],
+      insurance: data['insurance'],
     );
   }
 
@@ -83,6 +90,8 @@ class UserModel {
       'profileImageUrl': profileImageUrl,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      if (plateNumber != null) 'plateNumber': plateNumber,
+      if (insurance != null) 'insurance': insurance,
       if (driverLicense != null) 'driverLicense': driverLicense,
       if (nationalId != null) 'nationalId': nationalId,
       if (vehicleRegistration != null) 'vehicleRegistration': vehicleRegistration,
@@ -112,6 +121,8 @@ class UserModel {
     bool? isAvailable,
     double? rating,
     int? completedJobs,
+    String? plateNumber,
+    String? insurance,
   }) {
     return UserModel(
       uid: uid,
@@ -132,6 +143,8 @@ class UserModel {
       isAvailable: isAvailable ?? this.isAvailable,
       rating: rating ?? this.rating,
       completedJobs: completedJobs ?? this.completedJobs,
+      plateNumber: plateNumber ?? this.plateNumber,
+      insurance: insurance ?? this.insurance,
     );
   }
 }

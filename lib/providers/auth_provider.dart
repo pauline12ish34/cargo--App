@@ -61,6 +61,9 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+
+
+
   // Sign up anonymously for testing
   Future<bool> signUpAnonymously({
     required String name,
@@ -103,6 +106,11 @@ class AuthProvider with ChangeNotifier {
       _setLoading(false);
     }
   }
+
+//dirver 
+
+
+
 
   // Sign in
   Future<bool> signIn({required String email, required String password}) async {
@@ -228,37 +236,50 @@ class AuthProvider with ChangeNotifier {
 
   // Update driver documents
   Future<bool> updateDriverDocuments({
-    required String driverLicense,
-    required String nationalId,
-    required String vehicleRegistration,
-    required String vehicleType,
-    required String vehicleCapacity,
-    String? vehicleImageUrl,
-  }) async {
-    try {
-      _setLoading(true);
-      _clearError();
+  required String driverLicense,
+  required String nationalId,
+  required String vehicleRegistration,
+  required String vehicleType,
+  required String vehicleCapacity,
+  String? vehicleImageUrl,
+  String? plateNumber,
+  String? insurance,
+}) async {
+  try {
+    _setLoading(true);
+    _clearError();
 
-      await _authService.updateDriverDocuments(
-        driverLicense: driverLicense,
-        nationalId: nationalId,
-        vehicleRegistration: vehicleRegistration,
-        vehicleType: vehicleType,
-        vehicleCapacity: vehicleCapacity,
-        vehicleImageUrl: vehicleImageUrl,
-      );
-
-      // Refresh user data
-      _user = await _authService.getCurrentUserData();
-
-      return true;
-    } catch (e) {
-      _setError(e.toString());
+    if (_user == null || _user!.uid.isEmpty) {
+      _setError('No user logged in');
       return false;
-    } finally {
-      _setLoading(false);
     }
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_user!.uid)
+        .update({
+      'driverLicense': driverLicense,
+      'nationalId': nationalId,
+      'vehicleRegistration': vehicleRegistration,
+      'vehicleType': vehicleType,
+      'vehicleCapacity': vehicleCapacity,
+      if (vehicleImageUrl != null) 'vehicleImageUrl': vehicleImageUrl,
+      if (plateNumber != null) 'plateNumber': plateNumber,
+      if (insurance != null) 'insurance': insurance,
+      'updatedAt': Timestamp.fromDate(DateTime.now()),
+    });
+
+    // Refresh user data
+    _user = await _authService.getCurrentUserData();
+
+    return true;
+  } catch (e) {
+    _setError(e.toString());
+    return false;
+  } finally {
+    _setLoading(false);
   }
+}
 
   // Update driver availability
   Future<bool> updateDriverAvailability(bool isAvailable) async {

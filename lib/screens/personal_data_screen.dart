@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../features/profile/providers/profile_provider.dart';
-import '../core/models/user_model.dart';
 
 class PersonalDataScreen extends StatefulWidget {
   const PersonalDataScreen({super.key});

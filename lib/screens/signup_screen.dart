@@ -1,3 +1,4 @@
+import 'package:cargo_app/screens/driver_details.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -29,30 +30,48 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  Future<void> _handleSignup() async {
-    if (!_formKey.currentState!.validate()) return;
+  // In your existing SignupScreen, modify the _handleSignup method:
+Future<void> _handleSignup() async {
+  if (!_formKey.currentState!.validate()) return;
 
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-
-    final success = await authProvider.signUp(
-      email: emailController.text.trim(),
-      password: passwordController.text,
-      name: nameController.text.trim(),
-      phoneNumber: phoneController.text.trim(),
-      role: _selectedRole,
-    );
-
-    if (success && mounted) {
-      Navigator.pushReplacementNamed(context, '/email-verification');
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.error ?? 'Signup failed'),
-          backgroundColor: Colors.red,
+  if (_selectedRole == UserRole.driver) {
+    // Navigate to multi-step driver registration
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DriverSignupScreen(
+          initialName: nameController.text.trim(),
+          initialEmail: emailController.text.trim(),
+          initialPhone: phoneController.text.trim(),
+          initialPassword: passwordController.text,
         ),
-      );
-    }
+      ),
+    );
+    return;
   }
+
+  // Existing cargo owner registration
+  final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  final success = await authProvider.signUp(
+    email: emailController.text.trim(),
+    password: passwordController.text,
+    name: nameController.text.trim(),
+    phoneNumber: phoneController.text.trim(),
+    role: _selectedRole,
+  );
+
+  if (success && mounted) {
+    Navigator.pushReplacementNamed(context, '/email-verification');
+  } else if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(authProvider.error ?? 'Signup failed'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
