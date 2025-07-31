@@ -619,98 +619,98 @@ class _DriverProfileEditScreenState extends State<DriverProfileEditScreen> with 
               const SizedBox(height: 32),
               
               // Document Upload Section
-              const Text(
-                'Required Documents',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Upload your verification documents to complete your driver profile',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 16),
-              
-              _buildDocumentUploadCard(
-                title: 'Driver\'s License',
-                description: 'Upload a clear photo of your valid driver\'s license',
-                onTap: () {
-                  showDocumentPickerDialog(
-                    context,
-                    'Driver\'s License',
-                    onDocumentSelected: (file) {
-                      setState(() {
-                        _driverLicenseFile = file;
-                      });
-                    },
-                  );
-                },
-                isUploading: _driverLicenseUploading,
-                currentUrl: _user?.driverLicense,
-                selectedFile: _driverLicenseFile,
-              ),
-              
-              _buildDocumentUploadCard(
-                title: 'National ID',
-                description: 'Upload a clear photo of your national ID card',
-                onTap: () {
-                  showDocumentPickerDialog(
-                    context,
-                    'National ID',
-                    onDocumentSelected: (file) {
-                      setState(() {
-                        _nationalIdFile = file;
-                      });
-                    },
-                  );
-                },
-                isUploading: _nationalIdUploading,
-                currentUrl: _user?.nationalId,
-                selectedFile: _nationalIdFile,
-              ),
-              
-              _buildDocumentUploadCard(
-                title: 'Vehicle Registration',
-                description: 'Upload your vehicle registration certificate',
-                onTap: () {
-                  showDocumentPickerDialog(
-                    context,
-                    'Vehicle Registration',
-                    onDocumentSelected: (file) {
-                      setState(() {
-                        _vehicleRegistrationFile = file;
-                      });
-                    },
-                  );
-                },
-                isUploading: _vehicleRegistrationUploading,
-                currentUrl: _user?.vehicleRegistration,
-                selectedFile: _vehicleRegistrationFile,
-              ),
-              
-              _buildDocumentUploadCard(
-                title: 'Vehicle Photo',
-                description: 'Upload a clear photo of your vehicle',
-                onTap: () {
-                  showDocumentPickerDialog(
-                    context,
-                    'Vehicle Photo',
-                    onDocumentSelected: (file) {
-                      setState(() {
-                        _vehicleImageFile = file;
-                      });
-                    },
-                  );
-                },
-                isUploading: _vehicleImageUploading,
-                currentUrl: _user?.vehicleImageUrl,
-                selectedFile: _vehicleImageFile,
-              ),
+              // const Text(
+              //   'Required Documents',
+              //   style: TextStyle(
+              //     fontSize: 18,
+              //     fontWeight: FontWeight.bold,
+              //   ),
+              // ),
+              // const SizedBox(height: 8),
+              // Text(
+              //   'Upload your verification documents to complete your driver profile',
+              //   style: TextStyle(
+              //     color: Colors.grey[600],
+              //     fontSize: 14,
+              //   ),
+              // ),
+              // const SizedBox(height: 16),
+              //
+              // _buildDocumentUploadCard(
+              //   title: 'Driver\'s License',
+              //   description: 'Upload a clear photo of your valid driver\'s license',
+              //   onTap: () {
+              //     showDocumentPickerDialog(
+              //       context,
+              //       'Driver\'s License',
+              //       onDocumentSelected: (file) {
+              //         setState(() {
+              //           _driverLicenseFile = file;
+              //         });
+              //       },
+              //     );
+              //   },
+              //   isUploading: _driverLicenseUploading,
+              //   currentUrl: _user?.driverLicense,
+              //   selectedFile: _driverLicenseFile,
+              // ),
+              //
+              // _buildDocumentUploadCard(
+              //   title: 'National ID',
+              //   description: 'Upload a clear photo of your national ID card',
+              //   onTap: () {
+              //     showDocumentPickerDialog(
+              //       context,
+              //       'National ID',
+              //       onDocumentSelected: (file) {
+              //         setState(() {
+              //           _nationalIdFile = file;
+              //         });
+              //       },
+              //     );
+              //   },
+              //   isUploading: _nationalIdUploading,
+              //   currentUrl: _user?.nationalId,
+              //   selectedFile: _nationalIdFile,
+              // ),
+              //
+              // _buildDocumentUploadCard(
+              //   title: 'Vehicle Registration',
+              //   description: 'Upload your vehicle registration certificate',
+              //   onTap: () {
+              //     showDocumentPickerDialog(
+              //       context,
+              //       'Vehicle Registration',
+              //       onDocumentSelected: (file) {
+              //         setState(() {
+              //           _vehicleRegistrationFile = file;
+              //         });
+              //       },
+              //     );
+              //   },
+              //   isUploading: _vehicleRegistrationUploading,
+              //   currentUrl: _user?.vehicleRegistration,
+              //   selectedFile: _vehicleRegistrationFile,
+              // ),
+              //
+              // _buildDocumentUploadCard(
+              //   title: 'Vehicle Photo',
+              //   description: 'Upload a clear photo of your vehicle',
+              //   onTap: () {
+              //     showDocumentPickerDialog(
+              //       context,
+              //       'Vehicle Photo',
+              //       onDocumentSelected: (file) {
+              //         setState(() {
+              //           _vehicleImageFile = file;
+              //         });
+              //       },
+              //     );
+              //   },
+              //   isUploading: _vehicleImageUploading,
+              //   currentUrl: _user?.vehicleImageUrl,
+              //   selectedFile: _vehicleImageFile,
+              // ),
               
               const SizedBox(height: 32),
               
