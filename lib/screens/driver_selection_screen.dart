@@ -7,6 +7,7 @@ import '../../../core/repositories/user_repository.dart';
 import '../../../providers/auth_provider.dart';
 import '../core/enums/app_enums.dart' hide VehicleType;
 import '../features/booking/providers/booking_provider.dart';
+import 'package:cargo_app/constants.dart';
 
 class DriverSelectionScreen extends StatefulWidget {
   final VehicleType vehicleType;
@@ -135,7 +136,7 @@ class _DriverSelectionScreenState extends State<DriverSelectionScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isReassignment ? 'Reassign Job' : 'Select Driver'),
-        backgroundColor: Colors.blue,
+        backgroundColor: primaryGreen,
         foregroundColor: Colors.white,
       ),
       body: _isLoading
@@ -183,7 +184,10 @@ class _DriverSelectionScreenState extends State<DriverSelectionScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            color: Colors.blue.shade50,
+            decoration: BoxDecoration(
+              color: lightGreen,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -208,7 +212,7 @@ class _DriverSelectionScreenState extends State<DriverSelectionScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: primaryGreen,
                       child: Text(
                         driver.name.isNotEmpty
                             ? driver.name[0].toUpperCase()
@@ -264,7 +268,7 @@ class _DriverSelectionScreenState extends State<DriverSelectionScreen> {
                     trailing: ElevatedButton(
                       onPressed: () => _selectDriver(driver),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: primaryGreen,
                         foregroundColor: Colors.white,
                       ),
                       child: const Text('Select'),

@@ -52,9 +52,27 @@ class _CargoOwnerHomeState extends State<CargoOwnerHome> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CargoLink'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        title: RichText(
+          text: TextSpan(
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              fontFamily: 'PaytoneOne',
+            ),
+            children: [
+              const TextSpan(
+                text: 'Cargo',
+                style: TextStyle(color: Colors.black),
+              ),
+              TextSpan(
+                text: 'Link',
+                style: TextStyle(color: primaryGreen),
+              ),
+            ],
+          ),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
@@ -82,7 +100,7 @@ class _CargoOwnerHomeState extends State<CargoOwnerHome> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
+        selectedItemColor: primaryGreen,
         onTap: _onItemTapped,
       ),
       floatingActionButton: _selectedIndex == 0 || _selectedIndex == 1
@@ -124,12 +142,9 @@ class _DashboardTab extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue.shade400, Colors.blue.shade600],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: lightGreen,
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: primaryGreen, width: 2),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,7 +154,7 @@ class _DashboardTab extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: primaryGreen,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -147,7 +162,7 @@ class _DashboardTab extends StatelessWidget {
                       'Need cargo transportation? Create a new job to get started.',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white70,
+                        color: primaryGreen,
                       ),
                     ),
                   ],
@@ -163,7 +178,7 @@ class _DashboardTab extends StatelessWidget {
                       title: 'Total Jobs',
                       value: '${bookingProvider.myBookings.length}',
                       icon: Icons.work,
-                      color: Colors.blue,
+                      color: primaryGreen,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -340,14 +355,14 @@ class _ProfileTab extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: lightGreen,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
                   children: [
                     CircleAvatar(
                       radius: 40,
-                      backgroundColor: Colors.blue,
+                      backgroundColor: primaryGreen,
                       child: Text(
                         user?.name.isNotEmpty == true
                             ? user!.name[0].toUpperCase()
@@ -382,7 +397,7 @@ class _ProfileTab extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        color: primaryGreen,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(
@@ -480,6 +495,7 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color, width: 0.8)
       ),
       child: Column(
         children: [
@@ -522,10 +538,10 @@ class _JobCard extends StatelessWidget {
         break;
       case BookingStatus.accepted:
       case BookingStatus.inProgress:
-        statusColor = Colors.blue;
+        statusColor = primaryGreen;
         break;
       case BookingStatus.completed:
-        statusColor = Colors.green;
+        statusColor = Colors.black;
         break;
       case BookingStatus.declined:
       case BookingStatus.cancelled:
@@ -659,20 +675,20 @@ class _JobCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
+                    color: lightGreen,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue.shade200),
+                    border: Border.all(color: primaryGreen),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.chat, size: 16, color: Colors.blue.shade700),
+                      Icon(Icons.chat, size: 16, color: appGreen),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Tap to chat with driver',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.blue.shade700,
+                            color: appGreen,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -703,9 +719,9 @@ class _ProfileOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: Colors.blue),
+      leading: Icon(icon, color: appGreen),
       title: Text(title),
-      trailing: const Icon(Icons.chevron_right),
+      trailing: Icon(Icons.chevron_right, color: appGreen),
       onTap: onTap,
     );
   }

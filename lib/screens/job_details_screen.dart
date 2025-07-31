@@ -8,6 +8,7 @@ import '../../../providers/auth_provider.dart';
 import '../core/enums/app_enums.dart' hide BookingStatus;
 import '../features/chat/chat_screen.dart';
 import '../screens/driver_selection_screen.dart';
+import 'package:cargo_app/constants.dart';
 
 class JobDetailsScreen extends StatefulWidget {
   final BookingModel booking;
@@ -53,12 +54,13 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final isCargoOwner = authProvider.user?.role == UserRole.cargoOwner;
+    // final isCargoOwner = authProvider.user?.role == UserRole.cargoOwner;
+    final isCargoOwner = authProvider.user?.role.name == 'cargoOwner';
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Job Details'),
-        backgroundColor: Colors.blue,
+        backgroundColor: primaryGreen,
         foregroundColor: Colors.white,
         actions: [
           if (widget.booking.status == BookingStatus.accepted &&
@@ -138,7 +140,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                       children: [
                         CircleAvatar(
                           radius: 25,
-                          backgroundColor: Colors.blue,
+                          backgroundColor: primaryGreen,
                           child: Text(
                             _assignedDriver!.name.isNotEmpty
                                 ? _assignedDriver!.name[0].toUpperCase()
@@ -194,7 +196,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                           icon: const Icon(Icons.chat),
                           label: const Text('Open Chat'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
+                            backgroundColor: primaryGreen,
                             foregroundColor: Colors.white,
                           ),
                         ),
@@ -273,13 +275,14 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
         return [
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
+            child: ElevatedButton.icon(
               onPressed: _reassignJob,
+              icon: const Icon(Icons.swap_horiz),
+              label: const Text('Reassign Driver'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: primaryGreen,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Reassign to Another Driver'),
             ),
           ),
           const SizedBox(height: 12),
@@ -305,7 +308,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
               icon: const Icon(Icons.chat),
               label: const Text('Chat with Driver'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: primaryGreen,
                 foregroundColor: Colors.white,
               ),
             ),
@@ -375,7 +378,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
               icon: const Icon(Icons.chat),
               label: const Text('Chat with Cargo Owner'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: primaryGreen,
                 foregroundColor: Colors.white,
               ),
             ),
@@ -441,9 +444,17 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
           bookingId: widget.booking.id,
         ),
       ),
-    ).then((_) {
-      // Refresh the page
-      _loadDriverInfo();
+    ).then((result) async {
+      // After reassigning, refresh the driver info and show a snackbar if reassigned
+      await _loadDriverInfo();
+      if (result == true && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Job reassigned to a new driver.'),
+            backgroundColor: primaryGreen,
+          ),
+        );
+      }
     });
   }
 
@@ -542,7 +553,7 @@ class _StatusBanner extends StatelessWidget {
         statusMessage = 'Waiting for driver acceptance';
         break;
       case BookingStatus.accepted:
-        statusColor = Colors.blue;
+        statusColor = primaryGreen;
         statusIcon = Icons.check_circle;
         statusMessage = 'Driver has accepted your job';
         break;

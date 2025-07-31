@@ -1,3 +1,4 @@
+import 'package:cargo_app/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/models/booking_model.dart';
@@ -92,7 +93,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create New Job'),
-        backgroundColor: Colors.blue,
+        backgroundColor: primaryGreen,
         foregroundColor: Colors.white,
       ),
       body: Consumer<BookingProvider>(
@@ -228,7 +229,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                     child: ElevatedButton(
                       onPressed: bookingProvider.isLoading ? null : _createJob,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: primaryGreen,
                         foregroundColor: Colors.white,
                       ),
                       child: bookingProvider.isLoading

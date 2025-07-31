@@ -4,6 +4,7 @@ import '../../../core/models/booking_model.dart';
 import '../../../core/models/chat_model.dart';
 import '../../../providers/auth_provider.dart';
 import 'chat_provider.dart';
+import 'package:cargo_app/constants.dart';
 
 class ChatScreen extends StatefulWidget {
   final BookingModel booking;
@@ -95,7 +96,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: primaryGreen,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -246,7 +247,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 Consumer<ChatProvider>(
                   builder: (context, chatProvider, child) {
                     return CircleAvatar(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: primaryGreen,
                       child: IconButton(
                         icon: const Icon(
                           Icons.send,
@@ -272,7 +273,7 @@ class _ChatScreenState extends State<ChatScreen> {
         return Colors.orange;
       case BookingStatus.accepted:
       case BookingStatus.inProgress:
-        return Colors.blue;
+        return primaryGreen;
       case BookingStatus.completed:
         return Colors.green;
       case BookingStatus.declined:
@@ -412,7 +413,7 @@ class _MessageBubble extends StatelessWidget {
           if (!isMe) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: Colors.blue,
+              backgroundColor: primaryGreen,
               child: Text(
                 message.senderName.isNotEmpty
                     ? message.senderName[0].toUpperCase()
@@ -430,7 +431,7 @@ class _MessageBubble extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
               decoration: BoxDecoration(
-                color: isMe ? Colors.blue : Colors.grey.shade200,
+                color: isMe ? primaryGreen : Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Column(

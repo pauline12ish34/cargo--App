@@ -18,6 +18,7 @@ import 'features/profile/providers/profile_provider.dart';
 import 'features/booking/providers/booking_provider.dart';
 import 'core/repositories/user_repository.dart';
 import 'core/repositories/booking_repository.dart';
+import 'package:cargo_app/constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -78,9 +79,9 @@ class MyApp extends StatelessWidget {
               title: 'CargoLink',
               debugShowCheckedModeBanner: false,
               theme: ThemeData(
-                fontFamily: 'Roboto',
+                fontFamily: 'Lexend',
                 useMaterial3: true,
-                colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+                colorScheme: ColorScheme.fromSeed(seedColor: primaryGreen),
               ),
               initialRoute: '/splash',
               routes: {
